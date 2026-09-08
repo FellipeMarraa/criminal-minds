@@ -112,8 +112,12 @@ export default function CaseLobbyPhase({ room, userId }: CaseLobbyPhaseProps) {
                             <Users size={16} /> Detetives na Sala
                         </h3>
                         <div className="space-y-3">
-                            {room.members.map((member) => (
-                                <div key={member.id} className="flex items-center gap-4 p-4 rounded-2xl border border-slate-800 bg-slate-900">
+                            {room.members.map((member, i) => (
+                                <div
+                                    key={member.id}
+                                    style={{ animationDelay: `${i * 60}ms` }}
+                                    className="flex items-center gap-4 p-4 rounded-2xl border border-slate-800 bg-slate-900 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                >
                                     <img
                                         src={member.photo || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`}
                                         className="w-11 h-11 rounded-full border-2 border-slate-800 shrink-0"
@@ -162,13 +166,14 @@ export default function CaseLobbyPhase({ room, userId }: CaseLobbyPhaseProps) {
                         <DialogDescription>Qual mistério a sala vai investigar?</DialogDescription>
                     </DialogHeader>
                     <div className="overflow-y-auto flex-1 space-y-2 -mx-1 px-1">
-                        {CASES.map((c) => {
+                        {CASES.map((c, i) => {
                             const locked = c.premium && !isRoomPremium;
                             return (
                                 <button
                                     key={c.id}
                                     onClick={() => !locked && handleSelectCase(c.id)}
-                                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border text-left transition-all ${
+                                    style={{ animationDelay: `${i * 50}ms` }}
+                                    className={`w-full flex items-center gap-3 p-4 rounded-2xl border text-left transition-all animate-in fade-in slide-in-from-bottom-2 duration-300 hover:scale-[1.01] active:scale-95 ${
                                         locked
                                             ? 'border-slate-800 bg-slate-900/50 opacity-60 cursor-not-allowed'
                                             : room.caseId === c.id

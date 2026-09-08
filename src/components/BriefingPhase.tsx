@@ -30,19 +30,19 @@ export default function BriefingPhase({ room, userId }: BriefingPhaseProps) {
         <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center p-6">
             <div className="w-full max-w-2xl flex flex-col min-h-screen">
                 <header className="flex flex-col items-center text-center mb-8 pt-6">
-                    <div className="p-3 bg-red-500/10 rounded-2xl text-red-400 mb-3">
+                    <div className="p-3 bg-red-500/10 rounded-2xl text-red-400 mb-3 animate-in zoom-in-50 fade-in duration-500">
                         <Skull size={32} />
                     </div>
-                    <h2 className="text-2xl font-black leading-tight">{activeCase.title}</h2>
+                    <h2 className="text-2xl font-black leading-tight animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">{activeCase.title}</h2>
                 </header>
 
-                <div className="mb-6 p-5 rounded-2xl bg-slate-900 border border-slate-800">
+                <div className="mb-6 p-5 rounded-2xl bg-slate-900 border border-slate-800 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
                     <p className="text-xs font-black uppercase tracking-widest text-red-400 mb-2">A Vítima</p>
                     <p className="font-bold text-lg">{activeCase.victim.name}</p>
                     <p className="text-sm text-slate-400 mt-1">{activeCase.victim.description}</p>
                 </div>
 
-                <div className="mb-6 p-5 rounded-2xl bg-slate-900/50 border border-slate-800">
+                <div className="mb-6 p-5 rounded-2xl bg-slate-900/50 border border-slate-800 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
                     <p className="text-sm text-slate-300 leading-relaxed">{activeCase.intro}</p>
                 </div>
 
@@ -51,8 +51,12 @@ export default function BriefingPhase({ room, userId }: BriefingPhaseProps) {
                         <Users size={16} /> Suspeitos
                     </h3>
                     <div className="space-y-3">
-                        {activeCase.suspects.map((s) => (
-                            <div key={s.id} className="p-4 rounded-2xl border border-slate-800 bg-slate-900">
+                        {activeCase.suspects.map((s, i) => (
+                            <div
+                                key={s.id}
+                                style={{ animationDelay: `${450 + i * 80}ms` }}
+                                className="p-4 rounded-2xl border border-slate-800 bg-slate-900 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                            >
                                 <p className="font-bold">{s.name}</p>
                                 <p className="text-sm text-slate-400 mt-1">{s.description}</p>
                                 <p className="text-xs text-slate-500 mt-2 italic">Álibi: {s.alibi}</p>
@@ -67,7 +71,8 @@ export default function BriefingPhase({ room, userId }: BriefingPhaseProps) {
                     {isAdmin ? (
                         <button
                             onClick={startInvestigation}
-                            className="w-full py-4 rounded-2xl font-black flex items-center justify-center gap-3 bg-red-600 hover:bg-red-500 text-white shadow-2xl shadow-red-500/20 border-b-4 border-red-800 transition-all"
+                            className="w-full py-4 rounded-2xl font-black flex items-center justify-center gap-3 bg-red-600 hover:bg-red-500 text-white shadow-2xl shadow-red-500/20 border-b-4 border-red-800 transition-all hover:scale-[1.02] active:scale-95 animate-in fade-in slide-in-from-bottom-2 duration-500"
+                            style={{ animationDelay: '600ms' }}
                         >
                             <Play size={20} fill="currentColor" /> Iniciar Investigação
                         </button>

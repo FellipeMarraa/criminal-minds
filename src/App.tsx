@@ -388,16 +388,16 @@ export default function App() {
     if (!user) {
         return (
             <div className="flex min-h-screen w-full flex-col items-center justify-center bg-slate-950 p-6 text-center">
-                <div className="mb-4 p-4 rounded-3xl bg-red-500/10 text-red-500">
+                <div className="mb-4 p-4 rounded-3xl bg-red-500/10 text-red-500 animate-in zoom-in-50 fade-in duration-500">
                     <Skull size={48} />
                 </div>
-                <h1 className="mb-4 text-5xl md:text-6xl font-black tracking-tighter text-white">
+                <h1 className="mb-4 text-5xl md:text-6xl font-black tracking-tighter text-white animate-in fade-in slide-in-from-bottom-4 duration-700">
                     CRIMINAL<span className="text-red-500">MINDS</span>
                 </h1>
-                <p className="mb-10 max-w-xs text-slate-400">Monte uma sala, escolha um caso e descubra o culpado com seus amigos.</p>
+                <p className="mb-10 max-w-xs text-slate-400 animate-in fade-in duration-700 delay-150">Monte uma sala, escolha um caso e descubra o culpado com seus amigos.</p>
                 <button
                     onClick={handleGoogleLogin}
-                    className="flex items-center gap-3 rounded-2xl bg-white px-10 py-4 font-bold text-black transition-all hover:bg-slate-200 active:scale-95 shadow-xl"
+                    className="flex items-center gap-3 rounded-2xl bg-white px-10 py-4 font-bold text-black transition-all hover:bg-slate-200 hover:scale-105 active:scale-95 shadow-xl animate-in fade-in slide-in-from-bottom-2 duration-700 delay-300"
                 >
                     <LogIn size={20} /> Entrar com Google
                 </button>
@@ -568,7 +568,7 @@ export default function App() {
     }
 
     return (
-        <div className="min-h-screen w-full bg-slate-950 text-white">
+        <div key={room.status} className="min-h-screen w-full bg-slate-950 text-white animate-in fade-in duration-500">
             {room.status === 'LOBBY' && <CaseLobbyPhase room={room} userId={user.uid} />}
             {room.status === 'BRIEFING' && <BriefingPhase room={room} userId={user.uid} />}
             {room.status === 'INVESTIGATING' && <InvestigationPhase room={room} userId={user.uid} />}

@@ -58,7 +58,10 @@ export default function InvestigationPhase({ room, userId }: InvestigationPhaseP
                     </h3>
                     <div className="space-y-3">
                         {revealedClues.map((clue) => (
-                            <div key={clue.id} className="p-4 rounded-2xl border border-red-500/20 bg-red-600/5">
+                            <div
+                                key={clue.id}
+                                className="p-4 rounded-2xl border border-red-500/20 bg-red-600/5 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-500"
+                            >
                                 <p className="text-sm text-slate-200">{clue.text}</p>
                             </div>
                         ))}
@@ -70,8 +73,12 @@ export default function InvestigationPhase({ room, userId }: InvestigationPhaseP
                         <Users size={16} /> Suspeitos
                     </h3>
                     <div className="space-y-2">
-                        {activeCase.suspects.map((s) => (
-                            <div key={s.id} className="p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3">
+                        {activeCase.suspects.map((s, i) => (
+                            <div
+                                key={s.id}
+                                style={{ animationDelay: `${i * 60}ms` }}
+                                className="p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                            >
                                 <p className="font-bold text-sm">{s.name}</p>
                                 <p className="text-xs text-slate-500 truncate">{s.alibi}</p>
                             </div>
@@ -88,7 +95,7 @@ export default function InvestigationPhase({ room, userId }: InvestigationPhaseP
                             disabled={!hasMoreClues}
                             className={`w-full py-3.5 rounded-2xl font-black flex items-center justify-center gap-2 transition-all ${
                                 hasMoreClues
-                                    ? 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700'
+                                    ? 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 hover:scale-[1.02] active:scale-95'
                                     : 'bg-slate-900 text-slate-600 border border-slate-800 cursor-not-allowed opacity-50'
                             }`}
                         >
@@ -96,7 +103,7 @@ export default function InvestigationPhase({ room, userId }: InvestigationPhaseP
                         </button>
                         <button
                             onClick={goToVoting}
-                            className="w-full py-4 rounded-2xl font-black flex items-center justify-center gap-3 bg-red-600 hover:bg-red-500 text-white shadow-2xl shadow-red-500/20 border-b-4 border-red-800 transition-all"
+                            className="w-full py-4 rounded-2xl font-black flex items-center justify-center gap-3 bg-red-600 hover:bg-red-500 text-white shadow-2xl shadow-red-500/20 border-b-4 border-red-800 transition-all hover:scale-[1.02] active:scale-95"
                         >
                             <Vote size={20} /> Ir Para Votação
                         </button>
