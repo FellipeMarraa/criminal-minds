@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { db } from '../lib/firebase';
-import { doc, runTransaction } from 'firebase/firestore';
+import { doc, runTransaction, updateDoc } from 'firebase/firestore';
 import { CASES } from '../data/cases';
 import { awardCaseVotes } from '../lib/scoring';
 import type { Room } from '../types/game';
@@ -16,9 +16,8 @@ export default function VotingPhase({ room, userId }: VotingPhaseProps) {
     const activeCase = CASES.find((c) => c.id === room.caseId);
     const [submitting, setSubmitting] = useState(false);
 
-    const myEntry = room.members.find((m) => m.id === userId);
-    const iVoted = !!myEntry?.vote;
-    const votedCount = room.members.filter((m) => m.vote).length;
+    const iVoted = !!room.votes?.[userId];
+    const votedCount = Object.keys(room.votes ?? {}).length;
     const allVoted = votedCount === room.members.length;
 
     if (!activeCase) {
@@ -33,15 +32,12 @@ export default function VotingPhase({ room, userId }: VotingPhaseProps) {
         if (iVoted || submitting) return;
         setSubmitting(true);
         try {
-            const roomRef = doc(db, "rooms", room.id);
-            await runTransaction(db, async (tx) => {
-                const snap = await tx.get(roomRef);
-                if (!snap.exists()) return;
-                const currentMembers = (snap.data() as Room).members;
-                const updatedMembers = currentMembers.map((m) =>
-                    m.id === userId ? { ...m, vote: suspectId, votedAt: Date.now() } : m
-                );
-                tx.update(roomRef, { members: updatedMembers });
+            // Escreve só a própria chave do mapa `votes` — a regra do
+            // Firestore trava pra cada jogador só poder tocar em votes.{seu
+            // uid}, então isso nem precisa de transação (não há disputa de
+            // outro campo do mesmo doc).
+            await updateDoc(doc(db, "rooms", room.id), {
+                [`votes.${userId}`]: { suspectId, votedAt: Date.now() },
             });
         } finally {
             setSubmitting(false);
@@ -54,10 +50,10 @@ export default function VotingPhase({ room, userId }: VotingPhaseProps) {
         await runTransaction(db, async (tx) => {
             const snap = await tx.get(roomRef);
             if (!snap.exists() || (snap.data() as Room).status !== 'VOTING') return;
-            const currentMembers = (snap.data() as Room).members;
+            const current = snap.data() as Room;
             tx.update(roomRef, {
                 status: 'REVEAL',
-                members: awardCaseVotes(currentMembers, activeCase.solution.suspectId),
+                members: awardCaseVotes(current.members, current.votes, activeCase.solution.suspectId),
             });
         });
     };

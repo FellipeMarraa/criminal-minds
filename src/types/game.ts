@@ -4,9 +4,12 @@ export interface Player {
     id: string;
     name: string;
     photo?: string | null;
-    vote?: string | null;
-    votedAt?: number | null;
     totalPoints?: number;
+}
+
+export interface Vote {
+    suspectId: string;
+    votedAt: number;
 }
 
 export interface Room {
@@ -18,6 +21,11 @@ export interface Room {
     currentClueIndex?: number;
     memberIds: string[];
     members: Player[];
+    // Voto fica fora de `members` de propósito: a regra do Firestore só
+    // consegue garantir "cada jogador só mexe no próprio voto" quando é uma
+    // chave de mapa por uid — dentro de um array de mapas isso não dá pra
+    // travar por regra (ver firestore.rules).
+    votes?: Record<string, Vote>;
     createdAt?: Date;
 }
 

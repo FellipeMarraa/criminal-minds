@@ -20,7 +20,7 @@ export default function RevealPhase({ room, userId }: RevealPhaseProps) {
             status: 'LOBBY',
             caseId: null,
             currentClueIndex: 0,
-            members: room.members.map((m) => ({ ...m, vote: null, votedAt: null })),
+            votes: {},
         });
     };
 
@@ -58,7 +58,7 @@ export default function RevealPhase({ room, userId }: RevealPhaseProps) {
                     </h3>
                     <div className="space-y-2">
                         {standings.map((member, i) => {
-                            const correct = member.vote === activeCase.solution.suspectId;
+                            const correct = room.votes?.[member.id]?.suspectId === activeCase.solution.suspectId;
                             return (
                                 <div
                                     key={member.id}
