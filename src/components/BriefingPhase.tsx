@@ -2,8 +2,7 @@ import { db } from '../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { CASES } from '../data/cases';
 import type { Room } from '../types/game';
-import { Play, Users } from 'lucide-react';
-import GiphyMoment from './ui/giphy-moment';
+import { Play, Skull, Users } from 'lucide-react';
 
 interface BriefingPhaseProps {
     room: Room;
@@ -30,8 +29,10 @@ export default function BriefingPhase({ room, userId }: BriefingPhaseProps) {
     return (
         <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center p-6">
             <div className="w-full max-w-2xl flex flex-col min-h-screen">
-                <header className="flex flex-col items-center text-center mb-4 pt-2">
-                    <GiphyMoment query="detective case file investigation" size={200} className="mb-3" />
+                <header className="flex flex-col items-center text-center mb-8 pt-6">
+                    <div className="p-3 bg-red-500/10 rounded-2xl text-red-400 mb-3 animate-in zoom-in-50 fade-in duration-500">
+                        <Skull size={32} />
+                    </div>
                     <h2 className="text-2xl font-black leading-tight animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">{activeCase.title}</h2>
                 </header>
 
