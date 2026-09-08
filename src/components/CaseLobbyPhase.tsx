@@ -11,7 +11,7 @@ import {
     DialogHeader,
     DialogTitle,
 } from './ui/dialog';
-import { Check, Copy, FileSearch, Lock, Play, UserPlus, Users } from 'lucide-react';
+import { ArrowLeft, Check, Copy, FileSearch, Lock, Play, UserPlus, Users } from 'lucide-react';
 
 interface CaseLobbyPhaseProps {
     room: Room;
@@ -59,9 +59,17 @@ export default function CaseLobbyPhase({ room, userId }: CaseLobbyPhaseProps) {
         <>
             <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center">
                 <div className="w-full max-w-2xl p-6 flex flex-col min-h-screen">
-                    <header className="mb-8">
-                        <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500">Sala de Investigação</span>
-                        <h2 className="text-xl font-bold leading-none mt-1 truncate">{room.name || 'Nova Sala'}</h2>
+                    <header className="flex items-center gap-3 mb-8">
+                        <button
+                            onClick={() => window.location.href = window.location.origin}
+                            className="p-2.5 bg-slate-900 border border-slate-800 rounded-xl hover:bg-slate-800 transition-all text-slate-400 shrink-0"
+                        >
+                            <ArrowLeft size={20} />
+                        </button>
+                        <div className="min-w-0">
+                            <span className="text-[10px] font-black uppercase tracking-[0.2em] text-red-500">Sala de Investigação</span>
+                            <h2 className="text-xl font-bold leading-none mt-1 truncate">{room.name || 'Nova Sala'}</h2>
+                        </div>
                     </header>
 
                     {isAdmin && (
