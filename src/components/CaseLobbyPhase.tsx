@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { auth, db } from '../lib/firebase';
 import { collection, doc, onSnapshot, query, runTransaction, serverTimestamp, updateDoc, where } from 'firebase/firestore';
 import type { StoredCase } from '../data/cases';
@@ -35,6 +35,7 @@ export default function CaseLobbyPhase({ room, userId }: CaseLobbyPhaseProps) {
     const [availableCases, setAvailableCases] = useState<StoredCase[]>([]);
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
     const [starting, setStarting] = useState(false);
+    const bootstrapTriggered = useRef(false);
 
     // O plano da SALA é sempre o de quem criou (adminId), igual quemsoueu.
     useEffect(() => {
@@ -54,6 +55,24 @@ export default function CaseLobbyPhase({ room, userId }: CaseLobbyPhaseProps) {
         });
         return () => unsub();
     }, []);
+
+    // Bootstrap do estoque: replenish normalmente só dispara ao CONSUMIR um
+    // caso premium (ver startCase) — mas se nunca existiu nenhum ainda
+    // (estoque zerado, primeira sala premium do projeto), nada nunca
+    // dispararia o primeiro. Detecta esse caso e chama uma vez.
+    useEffect(() => {
+        if (!isAdmin || !isRoomPremium || bootstrapTriggered.current) return;
+        if (availableCases.some((c) => c.premium)) return;
+        bootstrapTriggered.current = true;
+        (async () => {
+            const idToken = await auth.currentUser?.getIdToken();
+            if (!idToken) return;
+            fetch('/api/cases/replenish', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${idToken}` },
+            }).catch(() => {});
+        })();
+    }, [isAdmin, isRoomPremium, availableCases]);
 
     const selectedCase = availableCases.find((c) => c.id === room.caseId) ?? null;
     const canStart = !!selectedCase;
