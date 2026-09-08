@@ -1,6 +1,6 @@
 import { db } from '../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
-import { CASES } from '../data/cases';
+import { useCase } from '../lib/useCase';
 import type { Room } from '../types/game';
 import { ArrowRight, Search, Users, Vote } from 'lucide-react';
 
@@ -9,15 +9,22 @@ interface InvestigationPhaseProps {
     userId: string;
 }
 
+const CATEGORY_LABELS: Record<string, string> = {
+    physical: 'Física',
+    testimony: 'Depoimento',
+    document: 'Documento',
+    forensic: 'Perícia',
+};
+
 export default function InvestigationPhase({ room, userId }: InvestigationPhaseProps) {
     const isAdmin = room.adminId === userId;
-    const activeCase = CASES.find((c) => c.id === room.caseId);
+    const activeCase = useCase(room.caseId);
     const clueIndex = room.currentClueIndex ?? 0;
 
     if (!activeCase) {
         return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500">
-                Caso não encontrado.
+            <div className="flex h-screen w-full items-center justify-center bg-slate-950">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-red-500 border-t-transparent"></div>
             </div>
         );
     }
@@ -62,7 +69,10 @@ export default function InvestigationPhase({ room, userId }: InvestigationPhaseP
                                 key={clue.id}
                                 className="p-4 rounded-2xl border border-red-500/20 bg-red-600/5 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-500"
                             >
-                                <p className="text-sm text-slate-200">{clue.text}</p>
+                                <span className="text-[10px] font-black uppercase tracking-widest text-red-500/70">
+                                    {CATEGORY_LABELS[clue.category] ?? clue.category}
+                                </span>
+                                <p className="text-sm text-slate-200 mt-1">{clue.text}</p>
                             </div>
                         ))}
                     </div>

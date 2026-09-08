@@ -12,6 +12,14 @@ export interface Vote {
     votedAt: number;
 }
 
+export interface RevealedSolution {
+    suspectId: string;
+    motive: string;
+    meansAndOpportunity: string;
+    explanation: string;
+    contradictingClueIds: string[];
+}
+
 export interface Room {
     id: string;
     name?: string;
@@ -26,6 +34,10 @@ export interface Room {
     // chave de mapa por uid — dentro de um array de mapas isso não dá pra
     // travar por regra (ver firestore.rules).
     votes?: Record<string, Vote>;
+    // Só existe depois que /api/cases/reveal escreve aqui (Admin SDK) — o
+    // client nunca tem acesso à solução antes disso (ver case_solutions/{id}
+    // nas firestore.rules, allow read/write: if false).
+    solution?: RevealedSolution | null;
     createdAt?: Date;
 }
 

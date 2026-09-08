@@ -1,6 +1,6 @@
 import { db } from '../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
-import { CASES } from '../data/cases';
+import { useCase } from '../lib/useCase';
 import type { Room } from '../types/game';
 import { Play, Skull, Users } from 'lucide-react';
 
@@ -11,7 +11,7 @@ interface BriefingPhaseProps {
 
 export default function BriefingPhase({ room, userId }: BriefingPhaseProps) {
     const isAdmin = room.adminId === userId;
-    const activeCase = CASES.find((c) => c.id === room.caseId);
+    const activeCase = useCase(room.caseId);
 
     const startInvestigation = async () => {
         if (!isAdmin) return;
@@ -20,8 +20,8 @@ export default function BriefingPhase({ room, userId }: BriefingPhaseProps) {
 
     if (!activeCase) {
         return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500">
-                Caso não encontrado.
+            <div className="flex h-screen w-full items-center justify-center bg-slate-950">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-red-500 border-t-transparent"></div>
             </div>
         );
     }
@@ -39,8 +39,30 @@ export default function BriefingPhase({ room, userId }: BriefingPhaseProps) {
                 <div className="mb-6 p-5 rounded-2xl bg-slate-900 border border-slate-800 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">
                     <p className="text-xs font-black uppercase tracking-widest text-red-400 mb-2">A Vítima</p>
                     <p className="font-bold text-lg">{activeCase.victim.name}</p>
-                    <p className="text-sm text-slate-400 mt-1">{activeCase.victim.description}</p>
+                    {(activeCase.victim.occupation || activeCase.victim.age) && (
+                        <p className="text-xs text-slate-500 mt-0.5">
+                            {activeCase.victim.occupation}{activeCase.victim.age ? `, ${activeCase.victim.age} anos` : ''}
+                        </p>
+                    )}
+                    <p className="text-sm text-slate-400 mt-2">{activeCase.victim.description}</p>
+                    <div className="flex flex-wrap gap-3 mt-3 text-xs text-slate-500">
+                        {activeCase.victim.location && <span>📍 {activeCase.victim.location}</span>}
+                        {activeCase.victim.timeOfDeath && <span>🕐 {activeCase.victim.timeOfDeath}</span>}
+                    </div>
                 </div>
+
+                {activeCase.timeline && activeCase.timeline.length > 0 && (
+                    <div className="mb-6 p-5 rounded-2xl bg-slate-900/50 border border-slate-800 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
+                        <p className="text-xs font-black uppercase tracking-widest text-red-400 mb-2">Linha do Tempo</p>
+                        <ul className="space-y-1.5">
+                            {activeCase.timeline.map((event, i) => (
+                                <li key={i} className="text-sm text-slate-300 flex gap-2">
+                                    <span className="text-red-500/60 shrink-0">—</span> {event}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
 
                 <div className="mb-6 p-5 rounded-2xl bg-slate-900/50 border border-slate-800 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
                     <p className="text-sm text-slate-300 leading-relaxed">{activeCase.intro}</p>
@@ -57,8 +79,12 @@ export default function BriefingPhase({ room, userId }: BriefingPhaseProps) {
                                 style={{ animationDelay: `${450 + i * 80}ms` }}
                                 className="p-4 rounded-2xl border border-slate-800 bg-slate-900 animate-in fade-in slide-in-from-bottom-2 duration-300"
                             >
-                                <p className="font-bold">{s.name}</p>
-                                <p className="text-sm text-slate-400 mt-1">{s.description}</p>
+                                <div className="flex items-center justify-between gap-2">
+                                    <p className="font-bold">{s.name}</p>
+                                    <span className="text-[10px] text-slate-500 shrink-0">{s.relationshipToVictim}</span>
+                                </div>
+                                {s.occupation && <p className="text-xs text-slate-500 mt-0.5">{s.occupation}{s.age ? `, ${s.age} anos` : ''}</p>}
+                                <p className="text-sm text-slate-400 mt-2">{s.background}</p>
                                 <p className="text-xs text-slate-500 mt-2 italic">Álibi: {s.alibi}</p>
                             </div>
                         ))}

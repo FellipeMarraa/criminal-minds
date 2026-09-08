@@ -1,9 +1,18 @@
 import { useEffect, useState } from 'react';
-import { db } from '../lib/firebase';
-import { doc, onSnapshot, updateDoc } from 'firebase/firestore';
-import { CASES } from '../data/cases';
+import { auth, db } from '../lib/firebase';
+import { collection, doc, onSnapshot, query, runTransaction, serverTimestamp, updateDoc, where } from 'firebase/firestore';
+import type { StoredCase } from '../data/cases';
 import type { AppUser, Room } from '../types/game';
 import { isPlanActive } from '../lib/plan';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from './ui/alert-dialog';
 import {
     Dialog,
     DialogContent,
@@ -23,6 +32,9 @@ export default function CaseLobbyPhase({ room, userId }: CaseLobbyPhaseProps) {
     const [copied, setCopied] = useState(false);
     const [showCaseDialog, setShowCaseDialog] = useState(false);
     const [isRoomPremium, setIsRoomPremium] = useState(false);
+    const [availableCases, setAvailableCases] = useState<StoredCase[]>([]);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [starting, setStarting] = useState(false);
 
     // O plano da SALA é sempre o de quem criou (adminId), igual quemsoueu.
     useEffect(() => {
@@ -33,7 +45,17 @@ export default function CaseLobbyPhase({ room, userId }: CaseLobbyPhaseProps) {
         return () => unsub();
     }, [room.adminId]);
 
-    const selectedCase = CASES.find((c) => c.id === room.caseId) ?? null;
+    // Estoque de casos: os free (handwritten) são permanentes, os premium
+    // (ai) se repõem sozinhos conforme são consumidos (ver startCase).
+    useEffect(() => {
+        const q = query(collection(db, 'cases'), where('status', '==', 'available'));
+        const unsub = onSnapshot(q, (snap) => {
+            setAvailableCases(snap.docs.map((d) => ({ id: d.id, ...d.data() } as StoredCase)));
+        });
+        return () => unsub();
+    }, []);
+
+    const selectedCase = availableCases.find((c) => c.id === room.caseId) ?? null;
     const canStart = !!selectedCase;
 
     const handleCopyLink = () => {
@@ -44,15 +66,54 @@ export default function CaseLobbyPhase({ room, userId }: CaseLobbyPhaseProps) {
     };
 
     const handleSelectCase = async (caseId: string) => {
-        const target = CASES.find((c) => c.id === caseId);
+        const target = availableCases.find((c) => c.id === caseId);
         if (target?.premium && !isRoomPremium) return;
         await updateDoc(doc(db, "rooms", room.id), { caseId });
         setShowCaseDialog(false);
     };
 
     const startCase = async () => {
-        if (!canStart) return;
-        await updateDoc(doc(db, "rooms", room.id), { status: 'BRIEFING' });
+        if (!canStart || !selectedCase || starting) return;
+        setStarting(true);
+        try {
+            if (selectedCase.premium) {
+                // Transação: só marca 'used' se ainda estiver 'available' —
+                // evita 2 salas pegarem o mesmo caso do estoque ao mesmo tempo.
+                try {
+                    await runTransaction(db, async (tx) => {
+                        const caseRef = doc(db, 'cases', selectedCase.id);
+                        const snap = await tx.get(caseRef);
+                        if (!snap.exists() || snap.data().status !== 'available') {
+                            throw new Error('CASE_ALREADY_USED');
+                        }
+                        tx.update(caseRef, { status: 'used', usedAt: serverTimestamp(), usedByRoomId: room.id });
+                    });
+                } catch (error: any) {
+                    if (error.message === 'CASE_ALREADY_USED') {
+                        setErrorMessage('Esse caso acabou de ser escolhido por outra sala. Escolha outro no estoque.');
+                    } else {
+                        setErrorMessage('Não foi possível iniciar o caso. Tente de novo.');
+                    }
+                    return;
+                }
+            }
+
+            await updateDoc(doc(db, "rooms", room.id), { status: 'BRIEFING' });
+
+            if (selectedCase.premium) {
+                // Fire-and-forget: repõe o estoque em background, não trava
+                // o host esperando a IA.
+                const idToken = await auth.currentUser?.getIdToken();
+                if (idToken) {
+                    fetch('/api/cases/replenish', {
+                        method: 'POST',
+                        headers: { Authorization: `Bearer ${idToken}` },
+                    }).catch(() => {});
+                }
+            }
+        } finally {
+            setStarting(false);
+        }
     };
 
     return (
@@ -146,15 +207,15 @@ export default function CaseLobbyPhase({ room, userId }: CaseLobbyPhaseProps) {
                         <div className="sticky bottom-0 pt-6 pb-2 bg-gradient-to-t from-slate-950 via-slate-950 to-transparent">
                             <button
                                 onClick={startCase}
-                                disabled={!canStart}
+                                disabled={!canStart || starting}
                                 className={`w-full py-4 rounded-2xl font-black flex items-center justify-center gap-3 transition-all shadow-2xl ${
-                                    canStart
+                                    canStart && !starting
                                         ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-500/20 border-b-4 border-red-800'
                                         : 'bg-slate-900 text-slate-600 border border-slate-800 cursor-not-allowed opacity-50'
                                 }`}
                             >
                                 <Play size={20} fill={canStart ? "currentColor" : "none"} />
-                                INICIAR CASO
+                                {starting ? 'INICIANDO...' : 'INICIAR CASO'}
                             </button>
                         </div>
                     ) : (
@@ -174,7 +235,10 @@ export default function CaseLobbyPhase({ room, userId }: CaseLobbyPhaseProps) {
                         <DialogDescription>Qual mistério a sala vai investigar?</DialogDescription>
                     </DialogHeader>
                     <div className="overflow-y-auto flex-1 space-y-2 -mx-1 px-1">
-                        {CASES.map((c, i) => {
+                        {availableCases.length === 0 && (
+                            <p className="px-3 py-6 text-center text-xs text-slate-500">Nenhum caso disponível no momento.</p>
+                        )}
+                        {availableCases.map((c, i) => {
                             const locked = c.premium && !isRoomPremium;
                             return (
                                 <button
@@ -204,6 +268,18 @@ export default function CaseLobbyPhase({ room, userId }: CaseLobbyPhaseProps) {
                     </div>
                 </DialogContent>
             </Dialog>
+
+            <AlertDialog open={!!errorMessage} onOpenChange={(open) => !open && setErrorMessage(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Ops!</AlertDialogTitle>
+                        <AlertDialogDescription>{errorMessage}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction onClick={() => setErrorMessage(null)}>Entendi</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </>
     );
 }

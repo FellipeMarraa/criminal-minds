@@ -1,10 +1,18 @@
 import { useState } from 'react';
-import { db } from '../lib/firebase';
-import { doc, runTransaction, updateDoc } from 'firebase/firestore';
-import { CASES } from '../data/cases';
-import { awardCaseVotes } from '../lib/scoring';
+import { auth, db } from '../lib/firebase';
+import { doc, updateDoc } from 'firebase/firestore';
+import { useCase } from '../lib/useCase';
 import type { Room } from '../types/game';
 import { Check, Gavel, Users } from 'lucide-react';
+import {
+    AlertDialog,
+    AlertDialogAction,
+    AlertDialogContent,
+    AlertDialogDescription,
+    AlertDialogFooter,
+    AlertDialogHeader,
+    AlertDialogTitle,
+} from './ui/alert-dialog';
 
 interface VotingPhaseProps {
     room: Room;
@@ -13,8 +21,10 @@ interface VotingPhaseProps {
 
 export default function VotingPhase({ room, userId }: VotingPhaseProps) {
     const isAdmin = room.adminId === userId;
-    const activeCase = CASES.find((c) => c.id === room.caseId);
+    const activeCase = useCase(room.caseId);
     const [submitting, setSubmitting] = useState(false);
+    const [revealing, setRevealing] = useState(false);
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
 
     const iVoted = !!room.votes?.[userId];
     const votedCount = Object.keys(room.votes ?? {}).length;
@@ -22,8 +32,8 @@ export default function VotingPhase({ room, userId }: VotingPhaseProps) {
 
     if (!activeCase) {
         return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500">
-                Caso não encontrado.
+            <div className="flex h-screen w-full items-center justify-center bg-slate-950">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-red-500 border-t-transparent"></div>
             </div>
         );
     }
@@ -45,17 +55,25 @@ export default function VotingPhase({ room, userId }: VotingPhaseProps) {
     };
 
     const revealResult = async () => {
-        if (!isAdmin) return;
-        const roomRef = doc(db, "rooms", room.id);
-        await runTransaction(db, async (tx) => {
-            const snap = await tx.get(roomRef);
-            if (!snap.exists() || (snap.data() as Room).status !== 'VOTING') return;
-            const current = snap.data() as Room;
-            tx.update(roomRef, {
-                status: 'REVEAL',
-                members: awardCaseVotes(current.members, current.votes, activeCase.solution.suspectId),
+        if (!isAdmin || revealing) return;
+        setRevealing(true);
+        try {
+            const idToken = await auth.currentUser?.getIdToken();
+            if (!idToken) return;
+            const res = await fetch('/api/cases/reveal', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${idToken}` },
+                body: JSON.stringify({ roomId: room.id }),
             });
-        });
+            if (!res.ok) {
+                const body = await res.json().catch(() => null);
+                setErrorMessage(body?.message ?? 'Não foi possível revelar o resultado. Tente de novo.');
+            }
+        } catch {
+            setErrorMessage('Não foi possível revelar o resultado. Tente de novo.');
+        } finally {
+            setRevealing(false);
+        }
     };
 
     return (
@@ -88,7 +106,7 @@ export default function VotingPhase({ room, userId }: VotingPhaseProps) {
                                 className="w-full p-4 rounded-2xl border border-slate-800 bg-slate-900 text-left transition-all hover:border-red-500/50 hover:bg-slate-800/50 hover:scale-[1.01] active:scale-95 disabled:opacity-50 animate-in fade-in slide-in-from-bottom-2 duration-300"
                             >
                                 <p className="font-bold">{s.name}</p>
-                                <p className="text-sm text-slate-500 mt-1">{s.description}</p>
+                                <p className="text-sm text-slate-500 mt-1">{s.background}</p>
                             </button>
                         ))}
                     </div>
@@ -100,18 +118,30 @@ export default function VotingPhase({ room, userId }: VotingPhaseProps) {
                     <div className="sticky bottom-0 pt-6 pb-2 bg-gradient-to-t from-slate-950 via-slate-950 to-transparent">
                         <button
                             onClick={revealResult}
-                            disabled={!allVoted}
+                            disabled={!allVoted || revealing}
                             className={`w-full py-4 rounded-2xl font-black flex items-center justify-center gap-3 transition-all shadow-2xl ${
-                                allVoted
+                                allVoted && !revealing
                                     ? 'bg-red-600 hover:bg-red-500 text-white shadow-red-500/20 border-b-4 border-red-800 hover:scale-[1.02] active:scale-95 animate-pulse'
                                     : 'bg-slate-900 text-slate-600 border border-slate-800 cursor-not-allowed opacity-50'
                             }`}
                         >
-                            <Gavel size={20} /> {allVoted ? 'Revelar Culpado' : 'Aguardando todos votarem...'}
+                            <Gavel size={20} /> {revealing ? 'Revelando...' : allVoted ? 'Revelar Culpado' : 'Aguardando todos votarem...'}
                         </button>
                     </div>
                 )}
             </div>
+
+            <AlertDialog open={!!errorMessage} onOpenChange={(open) => !open && setErrorMessage(null)}>
+                <AlertDialogContent>
+                    <AlertDialogHeader>
+                        <AlertDialogTitle>Ops!</AlertDialogTitle>
+                        <AlertDialogDescription>{errorMessage}</AlertDialogDescription>
+                    </AlertDialogHeader>
+                    <AlertDialogFooter>
+                        <AlertDialogAction onClick={() => setErrorMessage(null)}>Entendi</AlertDialogAction>
+                    </AlertDialogFooter>
+                </AlertDialogContent>
+            </AlertDialog>
         </div>
     );
 }

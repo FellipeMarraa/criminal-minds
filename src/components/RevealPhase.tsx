@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
 import { db } from '../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
-import { CASES } from '../data/cases';
+import { useCase } from '../lib/useCase';
 import type { Room } from '../types/game';
 import { Check, Crown, PlayCircle, Search, Skull, X } from 'lucide-react';
 
@@ -17,7 +17,8 @@ const REVEAL_DELAY_MS = 1200;
 
 export default function RevealPhase({ room, userId }: RevealPhaseProps) {
     const isAdmin = room.adminId === userId;
-    const activeCase = CASES.find((c) => c.id === room.caseId);
+    const activeCase = useCase(room.caseId);
+    const solution = room.solution;
     const standings = [...room.members].sort((a, b) => (b.totalPoints ?? 0) - (a.totalPoints ?? 0));
     const [revealed, setRevealed] = useState(false);
 
@@ -37,15 +38,15 @@ export default function RevealPhase({ room, userId }: RevealPhaseProps) {
         });
     };
 
-    if (!activeCase) {
+    if (!activeCase || !solution) {
         return (
-            <div className="min-h-screen bg-slate-950 flex items-center justify-center text-slate-500">
-                Caso não encontrado.
+            <div className="flex h-screen w-full items-center justify-center bg-slate-950">
+                <div className="h-12 w-12 animate-spin rounded-full border-4 border-red-500 border-t-transparent"></div>
             </div>
         );
     }
 
-    const culprit = activeCase.suspects.find((s) => s.id === activeCase.solution.suspectId);
+    const culprit = activeCase.suspects.find((s) => s.id === solution.suspectId);
 
     return (
         <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center p-6">
@@ -68,9 +69,11 @@ export default function RevealPhase({ room, userId }: RevealPhaseProps) {
                     <>
                         <div className="mb-6 p-5 rounded-2xl bg-slate-900 border border-slate-800 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-300">
                             <p className="text-xs font-black uppercase tracking-widest text-red-400 mb-2">Motivo</p>
-                            <p className="text-sm text-slate-300">{activeCase.solution.motive}</p>
+                            <p className="text-sm text-slate-300">{solution.motive}</p>
+                            <p className="text-xs font-black uppercase tracking-widest text-red-400 mb-2 mt-4">Meio e Oportunidade</p>
+                            <p className="text-sm text-slate-300">{solution.meansAndOpportunity}</p>
                             <p className="text-xs font-black uppercase tracking-widest text-red-400 mb-2 mt-4">Explicação</p>
-                            <p className="text-sm text-slate-300">{activeCase.solution.explanation}</p>
+                            <p className="text-sm text-slate-300">{solution.explanation}</p>
                         </div>
 
                         <div className="mb-4">
@@ -79,7 +82,7 @@ export default function RevealPhase({ room, userId }: RevealPhaseProps) {
                             </h3>
                             <div className="space-y-2">
                                 {standings.map((member, i) => {
-                                    const correct = room.votes?.[member.id]?.suspectId === activeCase.solution.suspectId;
+                                    const correct = room.votes?.[member.id]?.suspectId === solution.suspectId;
                                     return (
                                         <div
                                             key={member.id}

@@ -1,9 +1,19 @@
-import type { Player, Vote } from '../types/game';
-
-// Investigação é coletiva e simultânea (voto só é revelado depois que todos
-// votaram) — diferente do podium por ordem do quemsoueu, aqui não existe
-// "quem votou primeiro", só quem acertou o culpado.
+// Cópia server-side de src/lib/scoring.ts — api/ não importa src/ (bundling
+// isolado da Vercel Function, mesmo padrão já documentado no planning-trip
+// pra EXPENSE_CATEGORIES/CURRENCY_CODES duplicadas em api/ai/_lib/prompt.ts).
 export const CORRECT_VOTE_POINTS = 10;
+
+interface Player {
+    id: string;
+    name: string;
+    photo?: string | null;
+    totalPoints?: number;
+}
+
+interface Vote {
+    suspectId: string;
+    votedAt: number;
+}
 
 export function awardCaseVotes(
     members: Player[],
