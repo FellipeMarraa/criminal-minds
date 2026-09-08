@@ -2,7 +2,9 @@ import { db } from '../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { CASES } from '../data/cases';
 import type { Room } from '../types/game';
-import { Play, Skull, Users } from 'lucide-react';
+import { Play, Users } from 'lucide-react';
+import LottieAnimation from './ui/lottie-animation';
+import caseStampAnimation from '../assets/lottie/case-stamp.json';
 
 interface BriefingPhaseProps {
     room: Room;
@@ -29,11 +31,9 @@ export default function BriefingPhase({ room, userId }: BriefingPhaseProps) {
     return (
         <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center p-6">
             <div className="w-full max-w-2xl flex flex-col min-h-screen">
-                <header className="flex flex-col items-center text-center mb-8 pt-6">
-                    <div className="p-3 bg-red-500/10 rounded-2xl text-red-400 mb-3 animate-in zoom-in-50 fade-in duration-500">
-                        <Skull size={32} />
-                    </div>
-                    <h2 className="text-2xl font-black leading-tight animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">{activeCase.title}</h2>
+                <header className="flex flex-col items-center text-center mb-4 pt-2">
+                    <LottieAnimation animationData={caseStampAnimation} size={160} />
+                    <h2 className="text-2xl font-black leading-tight -mt-4 animate-in fade-in slide-in-from-bottom-2 duration-500 delay-150">{activeCase.title}</h2>
                 </header>
 
                 <div className="mb-6 p-5 rounded-2xl bg-slate-900 border border-slate-800 animate-in fade-in slide-in-from-bottom-4 duration-500 delay-150">

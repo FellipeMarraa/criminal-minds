@@ -3,7 +3,9 @@ import { db } from '../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { CASES } from '../data/cases';
 import type { Room } from '../types/game';
-import { Check, Crown, PlayCircle, Search, Skull, X } from 'lucide-react';
+import { Check, Crown, PlayCircle, Search, X } from 'lucide-react';
+import LottieAnimation from './ui/lottie-animation';
+import culpritFlashAnimation from '../assets/lottie/culprit-flash.json';
 
 interface RevealPhaseProps {
     room: Room;
@@ -50,11 +52,15 @@ export default function RevealPhase({ room, userId }: RevealPhaseProps) {
     return (
         <div className="min-h-screen bg-slate-950 text-white flex flex-col items-center p-6">
             <div className="w-full max-w-2xl flex flex-col min-h-screen">
-                <header className="flex flex-col items-center text-center mb-6 pt-6">
-                    <div className={`p-3 bg-red-500/10 rounded-2xl text-red-400 mb-3 ${revealed ? 'animate-in zoom-in-50 fade-in duration-500' : 'animate-pulse'}`}>
-                        {revealed ? <Skull size={32} /> : <Search size={32} />}
-                    </div>
-                    <h2 className="text-2xl font-black leading-none">
+                <header className="flex flex-col items-center text-center mb-2 pt-4">
+                    {revealed ? (
+                        <LottieAnimation animationData={culpritFlashAnimation} size={140} />
+                    ) : (
+                        <div className="p-3 bg-red-500/10 rounded-2xl text-red-400 mb-3 animate-pulse">
+                            <Search size={32} />
+                        </div>
+                    )}
+                    <h2 className="text-2xl font-black leading-none -mt-2">
                         {revealed ? 'O culpado era...' : 'Analisando as pistas...'}
                     </h2>
                     {revealed && (

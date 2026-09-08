@@ -4,7 +4,9 @@ import { doc, runTransaction, updateDoc } from 'firebase/firestore';
 import { CASES } from '../data/cases';
 import { awardCaseVotes } from '../lib/scoring';
 import type { Room } from '../types/game';
-import { Check, Gavel, Users } from 'lucide-react';
+import { Gavel, Users } from 'lucide-react';
+import LottieAnimation from './ui/lottie-animation';
+import voteCheckAnimation from '../assets/lottie/vote-check.json';
 
 interface VotingPhaseProps {
     room: Room;
@@ -72,10 +74,9 @@ export default function VotingPhase({ room, userId }: VotingPhaseProps) {
                 </header>
 
                 {iVoted ? (
-                    <div className="mb-8 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-center animate-in zoom-in-95 fade-in duration-300">
-                        <p className="text-sm text-emerald-400 font-bold flex items-center justify-center gap-2">
-                            <Check size={16} className="animate-in zoom-in-50 duration-300 delay-150" /> Voto registrado! Aguarde os outros detetives.
-                        </p>
+                    <div className="mb-8 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-center flex flex-col items-center">
+                        <LottieAnimation animationData={voteCheckAnimation} size={72} />
+                        <p className="text-sm text-emerald-400 font-bold -mt-2">Voto registrado! Aguarde os outros detetives.</p>
                     </div>
                 ) : (
                     <div className="space-y-3 mb-8">
