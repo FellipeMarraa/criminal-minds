@@ -3,8 +3,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { CASES } from '../data/cases';
 import type { Room } from '../types/game';
 import { ArrowRight, Search, Users, Vote } from 'lucide-react';
-import LottieAnimation from './ui/lottie-animation';
-import clueFlashAnimation from '../assets/lottie/clue-flash.json';
+import GiphyMoment from './ui/giphy-moment';
 
 interface InvestigationPhaseProps {
     room: Room;
@@ -55,12 +54,10 @@ export default function InvestigationPhase({ room, userId }: InvestigationPhaseP
                 </header>
 
                 <div className="mb-8">
-                    <div className="flex items-center gap-2 mb-3">
-                        <h3 className="flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-red-400">
-                            Pistas Reveladas ({revealedClues.length}/{activeCase.clues.length})
-                        </h3>
-                        <LottieAnimation key={clueIndex} animationData={clueFlashAnimation} size={40} />
-                    </div>
+                    <h3 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-red-400">
+                        Pistas Reveladas ({revealedClues.length}/{activeCase.clues.length})
+                    </h3>
+                    <GiphyMoment key={clueIndex} query="detective clue found magnifying glass" size={160} className="mb-3" />
                     <div className="space-y-3">
                         {revealedClues.map((clue) => (
                             <div

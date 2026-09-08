@@ -4,8 +4,7 @@ import { doc, updateDoc } from 'firebase/firestore';
 import { CASES } from '../data/cases';
 import type { Room } from '../types/game';
 import { Check, Crown, PlayCircle, Search, X } from 'lucide-react';
-import LottieAnimation from './ui/lottie-animation';
-import culpritFlashAnimation from '../assets/lottie/culprit-flash.json';
+import GiphyMoment from './ui/giphy-moment';
 
 interface RevealPhaseProps {
     room: Room;
@@ -54,13 +53,13 @@ export default function RevealPhase({ room, userId }: RevealPhaseProps) {
             <div className="w-full max-w-2xl flex flex-col min-h-screen">
                 <header className="flex flex-col items-center text-center mb-2 pt-4">
                     {revealed ? (
-                        <LottieAnimation animationData={culpritFlashAnimation} size={140} />
+                        <GiphyMoment query="busted caught criminal" size={200} className="mb-2" />
                     ) : (
                         <div className="p-3 bg-red-500/10 rounded-2xl text-red-400 mb-3 animate-pulse">
                             <Search size={32} />
                         </div>
                     )}
-                    <h2 className="text-2xl font-black leading-none -mt-2">
+                    <h2 className="text-2xl font-black leading-none">
                         {revealed ? 'O culpado era...' : 'Analisando as pistas...'}
                     </h2>
                     {revealed && (

@@ -5,8 +5,7 @@ import { CASES } from '../data/cases';
 import { awardCaseVotes } from '../lib/scoring';
 import type { Room } from '../types/game';
 import { Gavel, Users } from 'lucide-react';
-import LottieAnimation from './ui/lottie-animation';
-import voteCheckAnimation from '../assets/lottie/vote-check.json';
+import GiphyMoment from './ui/giphy-moment';
 
 interface VotingPhaseProps {
     room: Room;
@@ -75,8 +74,8 @@ export default function VotingPhase({ room, userId }: VotingPhaseProps) {
 
                 {iVoted ? (
                     <div className="mb-8 p-4 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl text-center flex flex-col items-center">
-                        <LottieAnimation animationData={voteCheckAnimation} size={72} />
-                        <p className="text-sm text-emerald-400 font-bold -mt-2">Voto registrado! Aguarde os outros detetives.</p>
+                        <GiphyMoment query="vote confirmed thumbs up" size={160} className="mb-2" />
+                        <p className="text-sm text-emerald-400 font-bold">Voto registrado! Aguarde os outros detetives.</p>
                     </div>
                 ) : (
                     <div className="space-y-3 mb-8">
