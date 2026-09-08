@@ -31,6 +31,7 @@ import VotingPhase from './components/VotingPhase';
 import RevealPhase from './components/RevealPhase';
 import type { AppUser, Player, Room } from './types/game';
 import { isPlanActive } from './lib/plan';
+import { syncPlanFromQuemsoueu } from './lib/planSync';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -147,6 +148,7 @@ export default function App() {
 
                 unsubProfile = await subscribeToProfile(userRef, baseData);
                 unsubRooms = fetchUserRooms(currentUser.uid);
+                syncPlanFromQuemsoueu();
             } else {
                 setUser(null);
                 setUserRooms([]);
