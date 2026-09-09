@@ -117,10 +117,10 @@ export default function InvestigationPhase({ room, userId }: InvestigationPhaseP
                             <div
                                 key={s.id}
                                 style={{ animationDelay: `${i * 60}ms` }}
-                                className="p-3 rounded-xl border border-slate-800 bg-slate-900/50 flex items-center gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300"
+                                className="p-3 rounded-xl border border-slate-800 bg-slate-900/50 animate-in fade-in slide-in-from-bottom-2 duration-300"
                             >
                                 <p className="font-bold text-sm">{s.name}</p>
-                                <p className="text-xs text-slate-500 truncate">{s.alibi}</p>
+                                <p className="text-xs text-slate-500 mt-1 italic">Álibi: {s.alibi}</p>
                             </div>
                         ))}
                     </div>
