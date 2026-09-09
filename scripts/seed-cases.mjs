@@ -68,10 +68,27 @@ const publicCase = {
             background: 'Demitida por Arnaldo na semana anterior sob acusações que ela considera injustas.',
         },
     ],
-    clues: [
-        { id: 'pista-1', order: 0, category: 'physical', text: 'A janela do escritório estava destrancada, apesar da porta trancada por dentro.', isRedHerring: false },
-        { id: 'pista-2', order: 1, category: 'document', text: 'Foi encontrado um bilhete rasgado com a assinatura "D." no lixo do escritório.', isRedHerring: false },
-        { id: 'pista-3', order: 2, category: 'testimony', text: 'O segurança da entrada confirma que Diana voltou à mansão 20 minutos antes do horário estimado da morte — mas ela disse que já tinha ido embora.', isRedHerring: false },
+    // Caso free é só a demo — 2 envelopes pequenos, não precisa das 3h+ que
+    // os casos premium gerados por IA miram.
+    envelopes: [
+        {
+            id: 'envelope-1',
+            order: 0,
+            title: 'Envelope 1: A Cena do Crime',
+            clues: [
+                { id: 'pista-1', category: 'physical', text: 'A janela do escritório estava destrancada, apesar da porta trancada por dentro.', isRedHerring: false },
+                { id: 'pista-2', category: 'document', text: 'Foi encontrado um bilhete rasgado com a assinatura "D." no lixo do escritório.', isRedHerring: false },
+            ],
+        },
+        {
+            id: 'envelope-2',
+            order: 1,
+            title: 'Envelope 2: Vozes da Festa',
+            clues: [
+                { id: 'pista-3', category: 'testimony', text: 'O segurança da entrada confirma que Diana voltou à mansão 20 minutos antes do horário estimado da morte — mas ela disse que já tinha ido embora.', isRedHerring: false },
+                { id: 'pista-4', category: 'testimony', text: 'Um garçom viu Carlos saindo da sala de jogos por alguns minutos, mas não soube dizer pra onde foi.', isRedHerring: true },
+            ],
+        },
     ],
     usedByRoomId: null,
 };

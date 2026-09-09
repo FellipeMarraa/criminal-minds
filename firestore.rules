@@ -62,7 +62,7 @@ service cloud.firestore {
       // bypassa esta regra) — o client nunca escreve essa chave.
       function isHostControlledFieldsUnchanged() {
         return !request.resource.data.diff(resource.data).affectedKeys()
-          .hasAny(['status', 'caseId', 'currentClueIndex', 'adminId', 'solution']);
+          .hasAny(['status', 'caseId', 'currentEnvelopeIndex', 'adminId', 'solution']);
       }
 
       // Mesmo o anfitrião nunca escreve status:'REVEAL' direto — só

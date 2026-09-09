@@ -274,7 +274,9 @@ export default function CaseLobbyPhase({ room, userId }: CaseLobbyPhaseProps) {
                                 >
                                     <div className="min-w-0 flex-1">
                                         <p className="font-bold truncate">{c.title}</p>
-                                        <p className="text-xs text-slate-500 mt-0.5">{c.suspects.length} suspeitos · {c.clues.length} pistas</p>
+                                        <p className="text-xs text-slate-500 mt-0.5">
+                                            {c.suspects.length} suspeitos · {c.envelopes.length} envelopes · {c.envelopes.reduce((n, e) => n + e.clues.length, 0)} pistas
+                                        </p>
                                     </div>
                                     {locked && (
                                         <span className="flex items-center gap-1 text-[9px] bg-amber-500/10 border border-amber-500/30 rounded-full px-2 py-0.5 text-amber-400 shrink-0">

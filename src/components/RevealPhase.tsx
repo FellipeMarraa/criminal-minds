@@ -33,7 +33,7 @@ export default function RevealPhase({ room, userId }: RevealPhaseProps) {
         await updateDoc(doc(db, "rooms", room.id), {
             status: 'LOBBY',
             caseId: null,
-            currentClueIndex: 0,
+            currentEnvelopeIndex: 0,
             votes: {},
         });
     };

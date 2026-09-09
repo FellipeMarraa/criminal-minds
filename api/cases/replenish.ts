@@ -3,59 +3,104 @@ import admin from "../_lib/firebaseAdmin.js";
 import { checkRateLimit } from "../_lib/rateLimit.js";
 import { checkUsageAllowed, calculateCostUsd, recordUsage } from "../_lib/usage.js";
 import { callGroq, REVIEW_MODEL } from "../_lib/groq.js";
-import { CASE_GENERATION_SYSTEM_PROMPT, CASE_START, REVIEW_START, extractBlock, buildReviewPrompt } from "../_lib/casePrompt.js";
-import { validateCaseShape, type GeneratedCase } from "../_lib/caseSchema.js";
+import { BIBLE_SYSTEM_PROMPT, BIBLE_START, ENVELOPES_START, REVIEW_START, extractBlock, buildEnvelopesPrompt, buildReviewPrompt } from "../_lib/casePrompt.js";
+import { validateBibleShape, validateEnvelopesShape, type GeneratedCase } from "../_lib/caseSchema.js";
+
+// 3 chamadas ao groq/compound (que faz busca na web, mais lento) numa
+// reposição de estoque zerado (bootstrap, até STOCK_TARGET casos numa única
+// requisição) pode passar do timeout padrão da função — usa o teto máximo
+// permitido pelo plano em vez do default curto. Progresso parcial não se
+// perde (cada caso já commitado no Firestore antes de passar pro próximo
+// continua salvo mesmo se a função for encerrada no meio).
+export const maxDuration = 60;
 
 // Quantos casos premium disponíveis (status:'available') mantemos no
 // estoque ao mesmo tempo. Cada consumo de 1 caso dispara esta rota, que só
 // repõe o que faltar (normalmente 1).
 const STOCK_TARGET = 5;
 
-// Até 2 tentativas totais (geração + validação programática + revisão por
-// IA) antes de desistir dessa reposição — ela fica pendente pro próximo
-// consumo disparar de novo, não é erro fatal do endpoint.
+// Até 2 tentativas totais (bíblia + envelopes + revisão, cada uma podendo
+// falhar sozinha) antes de desistir dessa reposição — ela fica pendente pro
+// próximo consumo disparar de novo, não é erro fatal do endpoint.
 async function generateOneCase(): Promise<{ caseData: GeneratedCase; costUsd: number } | null> {
     let totalCost = 0;
 
     for (let attempt = 0; attempt < 2; attempt++) {
-        // Qualquer erro do Groq (429 de rate limit, 5xx, rede) conta como
-        // falha desta tentativa, não derruba a rota inteira — o resto do
-        // estoque (ou outras chamadas desta mesma reposição) continua
-        // tentando normalmente.
-        let genResult;
+        // 1ª chamada: bíblia do caso (história, suspeitos, solução — sem
+        // pistas ainda). Qualquer erro do Groq (429, 5xx, rede) conta como
+        // falha desta tentativa, nunca derruba a rota inteira.
+        let bibleResult;
         try {
-            genResult = await callGroq([
-                { role: 'system', content: CASE_GENERATION_SYSTEM_PROMPT },
-                { role: 'user', content: 'Gere um novo caso de investigação criminal, seguindo exatamente o formato pedido.' },
+            bibleResult = await callGroq([
+                { role: 'system', content: BIBLE_SYSTEM_PROMPT },
+                { role: 'user', content: 'Gere a bíblia de um novo caso de investigação criminal, seguindo exatamente o formato pedido.' },
             ]);
         } catch (error) {
-            console.error('❌ Falha na geração do caso (tentativa segue disponível):', error instanceof Error ? error.message : error);
+            console.error('❌ Falha na geração da bíblia do caso (tentativa segue disponível):', error instanceof Error ? error.message : error);
             continue;
         }
-        totalCost += calculateCostUsd(genResult.promptTokens, genResult.completionTokens, genResult.toolCalls);
+        totalCost += calculateCostUsd(bibleResult.promptTokens, bibleResult.completionTokens, bibleResult.toolCalls);
 
-        const jsonText = extractBlock(genResult.text, CASE_START);
-        if (!jsonText) continue;
+        const bibleJson = extractBlock(bibleResult.text, BIBLE_START);
+        if (!bibleJson) continue;
 
-        let parsed: unknown;
+        let parsedBible: unknown;
         try {
-            parsed = JSON.parse(jsonText);
+            parsedBible = JSON.parse(bibleJson);
         } catch {
             continue;
         }
 
-        const validated = validateCaseShape(parsed);
-        if (!validated) continue;
+        const bible = validateBibleShape(parsedBible);
+        if (!bible) continue;
 
-        // Revisão usa um modelo menor, separado do de geração — rate limit
-        // de conta é por modelo, então isso não compete pelo mesmo teto de
-        // tokens/minuto do groq/compound (foi exatamente isso que causou um
-        // 429 real em produção antes desta correção).
+        // 2ª chamada: envelopes de pista, consistentes com a bíblia já
+        // fechada (inclusive a solução).
+        let envelopesResult;
+        try {
+            envelopesResult = await callGroq([
+                { role: 'system', content: 'Você cria pistas de investigação criminal organizadas em envelopes, consistentes com a bíblia do caso recebida.' },
+                { role: 'user', content: buildEnvelopesPrompt(bible) },
+            ]);
+        } catch (error) {
+            console.error('❌ Falha na geração dos envelopes (tentativa segue disponível):', error instanceof Error ? error.message : error);
+            continue;
+        }
+        totalCost += calculateCostUsd(envelopesResult.promptTokens, envelopesResult.completionTokens, envelopesResult.toolCalls);
+
+        const envelopesJson = extractBlock(envelopesResult.text, ENVELOPES_START);
+        if (!envelopesJson) continue;
+
+        let parsedEnvelopes: unknown;
+        try {
+            parsedEnvelopes = JSON.parse(envelopesJson);
+        } catch {
+            continue;
+        }
+
+        const envelopesResponse = validateEnvelopesShape(parsedEnvelopes);
+        if (!envelopesResponse) continue;
+
+        // contradictingClueIds só vale se apontar pra pistas que realmente
+        // existem nos envelopes que acabaram de ser criados — nunca confia
+        // cegamente no que o modelo cita.
+        const allClueIds = new Set(envelopesResponse.envelopes.flatMap((e) => e.clues.map((c) => c.id)));
+        const contradictingClueIds = envelopesResponse.contradictingClueIds.filter((id) => allClueIds.has(id));
+
+        const assembled: GeneratedCase = {
+            ...bible,
+            envelopes: envelopesResponse.envelopes,
+            solution: { ...bible.solution, contradictingClueIds },
+        };
+
+        // 3ª chamada: revisão/auditoria de coerência, num modelo separado
+        // (rate limit por modelo — não compete com o de geração, foi
+        // exatamente isso que causou um 429 real em produção antes).
         let reviewResult;
         try {
             reviewResult = await callGroq([
                 { role: 'system', content: 'Você audita casos de investigação criminal em busca de incoerência lógica entre pistas e solução.' },
-                { role: 'user', content: buildReviewPrompt(validated) },
+                { role: 'user', content: buildReviewPrompt(assembled) },
             ], REVIEW_MODEL);
         } catch (error) {
             console.error('❌ Falha na revisão do caso (tentativa segue disponível):', error instanceof Error ? error.message : error);
@@ -69,7 +114,7 @@ async function generateOneCase(): Promise<{ caseData: GeneratedCase; costUsd: nu
         try {
             const review = JSON.parse(reviewJson) as { valid?: boolean };
             if (review?.valid === true) {
-                return { caseData: validated, costUsd: totalCost };
+                return { caseData: assembled, costUsd: totalCost };
             }
         } catch {
             continue;

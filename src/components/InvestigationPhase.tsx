@@ -2,7 +2,7 @@ import { db } from '../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useCase } from '../lib/useCase';
 import type { Room } from '../types/game';
-import { ArrowRight, Search, Users, Vote } from 'lucide-react';
+import { ArrowRight, Mail, Search, Users, Vote } from 'lucide-react';
 
 interface InvestigationPhaseProps {
     room: Room;
@@ -19,7 +19,7 @@ const CATEGORY_LABELS: Record<string, string> = {
 export default function InvestigationPhase({ room, userId }: InvestigationPhaseProps) {
     const isAdmin = room.adminId === userId;
     const activeCase = useCase(room.caseId);
-    const clueIndex = room.currentClueIndex ?? 0;
+    const envelopeIndex = room.currentEnvelopeIndex ?? 0;
 
     if (!activeCase) {
         return (
@@ -29,12 +29,15 @@ export default function InvestigationPhase({ room, userId }: InvestigationPhaseP
         );
     }
 
-    const revealedClues = activeCase.clues.filter((c) => c.order <= clueIndex);
-    const hasMoreClues = clueIndex + 1 < activeCase.clues.length;
+    const envelopes = [...activeCase.envelopes].sort((a, b) => a.order - b.order);
+    const openedEnvelopes = envelopes.filter((e) => e.order <= envelopeIndex);
+    const hasMoreEnvelopes = envelopeIndex + 1 < envelopes.length;
+    const totalClues = envelopes.reduce((n, e) => n + e.clues.length, 0);
+    const revealedClues = openedEnvelopes.reduce((n, e) => n + e.clues.length, 0);
 
-    const revealNextClue = async () => {
-        if (!isAdmin || !hasMoreClues) return;
-        await updateDoc(doc(db, "rooms", room.id), { currentClueIndex: clueIndex + 1 });
+    const openNextEnvelope = async () => {
+        if (!isAdmin || !hasMoreEnvelopes) return;
+        await updateDoc(doc(db, "rooms", room.id), { currentEnvelopeIndex: envelopeIndex + 1 });
     };
 
     const goToVoting = async () => {
@@ -61,18 +64,31 @@ export default function InvestigationPhase({ room, userId }: InvestigationPhaseP
 
                 <div className="mb-8">
                     <h3 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-red-400">
-                        Pistas Reveladas ({revealedClues.length}/{activeCase.clues.length})
+                        Envelopes Abertos ({openedEnvelopes.length}/{envelopes.length} · {revealedClues}/{totalClues} pistas)
                     </h3>
-                    <div className="space-y-3">
-                        {revealedClues.map((clue) => (
+                    <div className="space-y-6">
+                        {openedEnvelopes.map((envelope) => (
                             <div
-                                key={clue.id}
-                                className="p-4 rounded-2xl border border-red-500/20 bg-red-600/5 animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-500"
+                                key={envelope.id}
+                                className="animate-in fade-in slide-in-from-top-2 duration-500"
                             >
-                                <span className="text-[10px] font-black uppercase tracking-widest text-red-500/70">
-                                    {CATEGORY_LABELS[clue.category] ?? clue.category}
-                                </span>
-                                <p className="text-sm text-slate-200 mt-1">{clue.text}</p>
+                                <div className="flex items-center gap-2 mb-2">
+                                    <Mail size={14} className="text-red-500/70 shrink-0" />
+                                    <p className="text-xs font-black uppercase tracking-widest text-red-500/70 truncate">{envelope.title}</p>
+                                </div>
+                                <div className="space-y-3">
+                                    {envelope.clues.map((clue) => (
+                                        <div
+                                            key={clue.id}
+                                            className="p-4 rounded-2xl border border-red-500/20 bg-red-600/5"
+                                        >
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-red-500/70">
+                                                {CATEGORY_LABELS[clue.category] ?? clue.category}
+                                            </span>
+                                            <p className="text-sm text-slate-200 mt-1">{clue.text}</p>
+                                        </div>
+                                    ))}
+                                </div>
                             </div>
                         ))}
                     </div>
@@ -101,15 +117,15 @@ export default function InvestigationPhase({ room, userId }: InvestigationPhaseP
                 {isAdmin ? (
                     <div className="sticky bottom-0 pt-6 pb-2 bg-gradient-to-t from-slate-950 via-slate-950 to-transparent space-y-3">
                         <button
-                            onClick={revealNextClue}
-                            disabled={!hasMoreClues}
+                            onClick={openNextEnvelope}
+                            disabled={!hasMoreEnvelopes}
                             className={`w-full py-3.5 rounded-2xl font-black flex items-center justify-center gap-2 transition-all ${
-                                hasMoreClues
+                                hasMoreEnvelopes
                                     ? 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 hover:scale-[1.02] active:scale-95'
                                     : 'bg-slate-900 text-slate-600 border border-slate-800 cursor-not-allowed opacity-50'
                             }`}
                         >
-                            <ArrowRight size={18} /> Revelar Próxima Pista
+                            <ArrowRight size={18} /> Abrir Próximo Envelope
                         </button>
                         <button
                             onClick={goToVoting}

@@ -13,10 +13,19 @@ export interface Suspect {
 
 export interface Clue {
     id: string;
-    order: number;
     category: 'physical' | 'testimony' | 'document' | 'forensic';
     text: string;
     isRedHerring: boolean;
+}
+
+// Pistas ficam agrupadas em envelopes com título temático, liberados em
+// blocos pelo anfitrião (não mais 1 pista solta por vez) — pensado pra
+// sustentar uma investigação de horas, não minutos.
+export interface Envelope {
+    id: string;
+    order: number;
+    title: string;
+    clues: Clue[];
 }
 
 export interface StoredCase {
@@ -36,6 +45,6 @@ export interface StoredCase {
     intro: string;
     timeline?: string[];
     suspects: Suspect[];
-    clues: Clue[];
+    envelopes: Envelope[];
     usedByRoomId?: string | null;
 }

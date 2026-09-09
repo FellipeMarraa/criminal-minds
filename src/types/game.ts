@@ -26,7 +26,7 @@ export interface Room {
     adminId: string;
     status: RoomStatus;
     caseId?: string | null;
-    currentClueIndex?: number;
+    currentEnvelopeIndex?: number;
     memberIds: string[];
     members: Player[];
     // Voto fica fora de `members` de propósito: a regra do Firestore só

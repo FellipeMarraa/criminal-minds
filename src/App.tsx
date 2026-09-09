@@ -277,7 +277,7 @@ export default function App() {
             adminId: user.uid,
             status: 'LOBBY',
             caseId: null,
-            currentClueIndex: 0,
+            currentEnvelopeIndex: 0,
             memberIds: [user.uid],
             members: [{ id: user.uid, name: user.name, photo: user.photo }],
             createdAt: new Date()
