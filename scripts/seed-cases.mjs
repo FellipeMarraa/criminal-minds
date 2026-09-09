@@ -546,6 +546,186 @@ const secondSolution = {
     contradictingClueIds: ['e4-c2', 'e3-c2', 'e5-c1', 'e5-c2', 'e5-c4', 'e3-c4', 'e4-c3', 'e1-c3', 'e4-c4', 'e6-c1', 'e6-c2'],
 };
 
+
+// ---------------------------------------------------------------------
+// 3º caso premium escrito à mão: "Águas Paradas"
+// ---------------------------------------------------------------------
+// Mesma régua: 6 suspeitos, cada um descartado por evidência específica
+// cruzada, pista ambígua (uniforme de toda a tripulação, chave-mestra de
+// 2 pessoas) só fecha cruzando com outra. Motivo de personagem diferente
+// dos outros 2 casos escritos à mão (aqui é lealdade/substituição, não
+// ambição nem desvio financeiro) e mesmo estilo de reviravolta final.
+const THIRD_CASE_ID = 'caso-04-iate';
+
+const thirdCase = {
+    title: 'Águas Paradas',
+    premium: true,
+    source: 'handwritten',
+    status: 'available',
+    victim: {
+        name: 'Cassiano Brandt',
+        age: 63,
+        occupation: 'Fundador e presidente da Brandt Shipping',
+        description: 'Magnata do transporte marítimo, construiu a frota Brandt ao longo de 40 anos — durão nos negócios, mas afetado por um sentimentalismo antigo com a própria tripulação de comando.',
+        timeOfDeath: '21h40 (estimado)',
+        location: 'Escritório particular, deck inferior do iate Sereníssima',
+    },
+    intro: `A Sereníssima, iate-bandeira da frota fundada por Cassiano Brandt, ancora ao largo todo mês de setembro pro baile beneficente anual da Fundação Brandt de Conservação Marinha — celebração que também marca o aniversário da empresa. A bordo, na noite do baile, seis pessoas guardam motivos bem diferentes pra evitar que Cassiano descubra certas coisas. O filho Rodrigo Brandt, diretor de operações da empresa, se opõe abertamente à venda da frota que o pai negocia em sigilo com um grupo estrangeiro, temendo o fim de centenas de empregos e do nome da família no setor. A filha Fernanda Brandt, que mora fora do país, defende a venda, contando com sua parte pra resolver problemas financeiros próprios, e vem em atrito aberto com o irmão por isso. A diretora de relações institucionais Carolina Aguilar guarda um affair antigo com Cassiano, encerrado há anos mas nunca falado abertamente diante de terceiros. O empresário concorrente Otto Lindqvist, convidado de honra da noite, articula nos bastidores uma proposta pra assumir o acordo de venda caso o negócio atual não se feche. O engenheiro-chefe Tadeu Nogueira vem, havia meses, falsificando laudos de inspeção de segurança da frota pra cortar custos de manutenção, pressionado por dívidas pessoais. E o capitão Hélio Marques, no comando da frota há 22 anos, acaba de saber que a empresa contratou em sigilo um diretor de operações marítimas externo — um sinal de que sua função está prestes a mudar.
+
+A tensão mais visível da noite, porém, é entre os irmãos: Rodrigo e Fernanda discutem abertamente sobre a venda desde que o avião dela pousou, numa cena que boa parte dos convidados presenciou no convés principal horas antes do jantar. Cassiano, cansado da disputa, planeja anunciar sua decisão final sobre a venda ainda naquela noite, encerrando a discussão de uma vez.
+
+Horas antes do baile, dois assuntos vieram à tona ao mesmo tempo. Fernanda, revisando as finanças da empresa antes de fechar sua parte na venda, encontrou inconsistências nos laudos de inspeção de segurança da frota — e avisou o pai, sem saber ainda de quem era a falsificação. E Cassiano, decidido a encerrar a novela da sucessão, preparou um anúncio pra fazer durante o jantar: fecharia a venda da frota ao grupo estrangeiro e anunciaria, junto, a chegada do novo diretor de operações marítimas que assumiria o comando estratégico da frota — uma mudança que empurraria Hélio pra um papel simbólico. Por volta das 21h40, durante o leilão beneficente no convés principal, Cassiano chamou Hélio a sós no escritório particular, no deck inferior, pra lhe contar pessoalmente antes do anúncio público — e não voltou. Foi encontrado pouco depois por um camareiro, caído entre os móveis, com um ferimento na cabeça que a perícia descartaria rapidamente como sendo de um tropeço.`,
+    timeline: [
+        'Há 40 anos — Cassiano funda a frota que dá origem à Brandt Shipping.',
+        'Há 22 anos — Hélio Marques assume o comando da frota como capitão.',
+        'Há 15 anos — Cassiano e a então diretora de marketing Carolina Aguilar têm um affair breve, encerrado sem nunca virem a público.',
+        'Há 10 anos — Rodrigo assume a diretoria de operações da empresa.',
+        'Há 8 anos — Fernanda se muda pro exterior.',
+        'Há 1 ano — negociações sigilosas de venda da frota a um grupo estrangeiro começam.',
+        'Há 8 meses — Tadeu começa a falsificar laudos de inspeção de segurança pra cortar custos de manutenção.',
+        'Há 3 meses — Cassiano contrata, em sigilo, um diretor de operações marítimas externo pra assumir o comando estratégico da frota.',
+        'Há 6 semanas — Otto Lindqvist articula nos bastidores uma proposta concorrente pra assumir o acordo de venda.',
+        'Ontem — Fernanda desembarca pro baile anual, reacende a discussão com Rodrigo sobre a venda.',
+        'Horas antes do baile — Fernanda encontra inconsistências nos laudos de inspeção e avisa o pai.',
+        'Horas antes do baile — Cassiano decide anunciar a venda e a chegada do novo diretor de operações no mesmo jantar.',
+        '21h40 (estimado) — Cassiano chama Hélio a sós no escritório particular.',
+        '21h40 (estimado) — Cassiano é morto no escritório particular.',
+    ],
+    suspects: [
+        {
+            id: 'rodrigo-brandt',
+            name: 'Rodrigo Brandt',
+            age: 36,
+            occupation: 'Diretor de operações da Brandt Shipping',
+            relationshipToVictim: 'Filho',
+            alibi: 'Diz que passou a janela conduzindo o leilão beneficente como mestre de cerimônias, no convés principal.',
+            background: 'Se opõe abertamente à venda da frota, defende manter a empresa independente e sob controle da família. Vem discutindo abertamente com a irmã desde que ela chegou pro baile.',
+        },
+        {
+            id: 'fernanda-brandt',
+            name: 'Fernanda Brandt',
+            age: 33,
+            occupation: 'Consultora financeira, mora no exterior',
+            relationshipToVictim: 'Filha',
+            alibi: 'Diz que passou a janela numa chamada por satélite com o marido, resolvendo uma emergência com a babá das crianças.',
+            background: 'Depende da parte da venda da frota pra resolver problemas financeiros próprios, defende abertamente o negócio com o grupo estrangeiro. Foi quem encontrou as inconsistências nos laudos de inspeção horas antes do baile.',
+        },
+        {
+            id: 'helio-marques',
+            name: 'Capitão Hélio Marques',
+            age: 58,
+            occupation: 'Capitão da frota Brandt',
+            relationshipToVictim: 'Funcionário de confiança de longa data',
+            alibi: 'Diz que estava sozinho na ponte de comando, fazendo a checagem de rotina de ancoragem, durante toda a janela.',
+            background: 'No comando da frota há 22 anos, extremamente leal a Cassiano. Soube há 3 meses que a empresa contratara, em sigilo, um diretor de operações marítimas externo. Como capitão, é uma das duas únicas pessoas a bordo com chave-mestra de todas as áreas restritas do iate, incluindo o escritório particular de Cassiano.',
+        },
+        {
+            id: 'carolina-aguilar',
+            name: 'Carolina Aguilar',
+            age: 49,
+            occupation: 'Diretora de relações institucionais da Brandt Shipping',
+            relationshipToVictim: 'Ex-affair, hoje colega de trabalho',
+            alibi: 'Diz que passou a janela toda concedendo entrevistas à imprensa especializada convidada pro baile.',
+            background: 'Teve um affair breve com Cassiano há 15 anos, encerrado sem nunca vir a público. Hoje cuida da imagem institucional da empresa, inclusive da cobertura de imprensa da negociação de venda.',
+        },
+        {
+            id: 'otto-lindqvist',
+            name: 'Otto Lindqvist',
+            age: 55,
+            occupation: 'Empresário do setor marítimo (concorrente)',
+            relationshipToVictim: 'Concorrente profissional, convidado de honra',
+            alibi: 'Diz que pediu uma lancha de volta à marina mais cedo, por volta das 21h, antes do horário estimado do crime.',
+            background: 'Vem articulando, nos bastidores, uma proposta concorrente pra assumir o acordo de venda da frota caso o negócio atual com o grupo estrangeiro não se feche.',
+        },
+        {
+            id: 'tadeu-nogueira',
+            name: 'Tadeu Nogueira',
+            age: 44,
+            occupation: 'Engenheiro-chefe da frota',
+            relationshipToVictim: 'Funcionário',
+            alibi: 'Diz que passou a janela toda resolvendo um problema no gerador principal, na casa de máquinas, com outros dois tripulantes.',
+            background: 'Vem falsificando laudos de inspeção de segurança da frota havia 8 meses, cortando custos de manutenção pra cobrir dívidas pessoais. Como engenheiro-chefe, é a outra pessoa a bordo com chave-mestra das áreas restritas, incluindo o escritório particular.',
+        },
+    ],
+    envelopes: [
+        {
+            id: 'env-1',
+            order: 0,
+            title: 'Envelope 1: A Cena e os Primeiros Depoimentos',
+            clues: [
+                { id: 'e1-c1', category: 'forensic', text: 'A perícia descarta a hipótese de tropeço: o ferimento na cabeça de Cassiano tem formato redondo, incompatível com a mobília do escritório — sugere golpe com objeto arredondado e pesado.', isRedHerring: false },
+                { id: 'e1-c2', category: 'testimony', text: 'Um camareiro comenta ter visto alguém do uniforme branco padrão da tripulação saindo do corredor do escritório particular em algum momento da noite — mas como toda a tripulação usa o mesmo uniforme, não conseguiu identificar quem era.', isRedHerring: false },
+                { id: 'e1-c3', category: 'document', text: 'Uma checagem preliminar dos registros de manutenção da frota aponta assinaturas de inspeção que não batem com as datas reais das vistorias, num padrão que vem se repetindo nos últimos meses.', isRedHerring: false },
+                { id: 'e1-c4', category: 'testimony', text: 'Rodrigo confirma que passou a noite conduzindo o leilão beneficente como mestre de cerimônias no convés principal.', isRedHerring: false },
+            ],
+        },
+        {
+            id: 'env-2',
+            order: 1,
+            title: 'Envelope 2: Motivos a Bordo',
+            clues: [
+                { id: 'e2-c1', category: 'document', text: 'Um bilhete rascunhado no caderno de Cassiano diz: "depois de hoje, vou anunciar as duas coisas juntas — fica mais fácil de engolir assim".', isRedHerring: false },
+                { id: 'e2-c2', category: 'testimony', text: 'Rodrigo e Fernanda admitem, cada um a seu modo, a discussão pública que tiveram mais cedo sobre a venda da frota, mas nenhum dos dois se lembra de ter visto o outro perto do escritório na hora do crime.', isRedHerring: false },
+                { id: 'e2-c3', category: 'testimony', text: 'Tadeu nega qualquer irregularidade nos laudos de inspeção quando perguntado, ficando visivelmente na defensiva.', isRedHerring: false },
+                { id: 'e2-c4', category: 'physical', text: 'Um colete salva-vidas rasgado é encontrado perto da escada de acesso ao deck inferior — à primeira vista parece relevante, mas é de um exercício de segurança rotineiro feito com a tripulação dias antes, sem relação com o crime.', isRedHerring: true },
+            ],
+        },
+        {
+            id: 'env-3',
+            order: 2,
+            title: 'Envelope 3: Álibis em Xeque',
+            clues: [
+                { id: 'e3-c1', category: 'document', text: 'A gravação da transmissão do leilão beneficente confirma Rodrigo, visivelmente, conduzindo o evento como mestre de cerimônias durante toda a janela do crime.', isRedHerring: false },
+                { id: 'e3-c2', category: 'document', text: 'O registro de comunicação por satélite do iate confirma uma chamada de vídeo de Fernanda com o marido, durando toda a janela do crime.', isRedHerring: false },
+                { id: 'e3-c3', category: 'testimony', text: 'Dois tripulantes confirmam Tadeu na casa de máquinas, resolvendo o problema do gerador principal, durante toda a janela do crime.', isRedHerring: false },
+                { id: 'e3-c4', category: 'document', text: 'O piloto da lancha e o registro de chegada da marina confirmam que Otto desembarcou por volta das 21h, antes da hora estimada do crime.', isRedHerring: false },
+                { id: 'e3-c5', category: 'document', text: 'Uma gravação de vídeo feita pela imprensa convidada mostra Carolina respondendo perguntas de jornalistas exatamente durante a janela do crime.', isRedHerring: false },
+            ],
+        },
+        {
+            id: 'env-4',
+            order: 3,
+            title: 'Envelope 4: O Segredo do Escritório',
+            clues: [
+                { id: 'e4-c1', category: 'forensic', text: 'Um resíduo de graxa marítima incomum é encontrado próximo ao corpo — o laboratório confirma se tratar de um lubrificante usado apenas na manutenção da própria ponte de comando, não em outras áreas do iate.', isRedHerring: false },
+                { id: 'e4-c2', category: 'document', text: 'O sistema de controle de acesso do escritório particular mostra que a porta foi destravada, no horário do crime, com uma das duas únicas chaves-mestras de área restrita do iate — uma pertence ao capitão, a outra ao engenheiro-chefe.', isRedHerring: false },
+                { id: 'e4-c3', category: 'document', text: 'Uma carta de intenção de contratação, encontrada entre os documentos de Cassiano, nomeia oficialmente um novo diretor de operações marítimas pra assumir o comando estratégico da frota "efetivo após esta travessia" — no mesmo envelope do bilhete visto antes no caderno de Cassiano.', isRedHerring: false },
+                { id: 'e4-c4', category: 'testimony', text: 'Um comissário de bordo lembra de Cassiano ter pedido, mais cedo naquela noite, pra chamar "o capitão" a sós no escritório antes do anúncio do jantar.', isRedHerring: false },
+            ],
+        },
+        {
+            id: 'env-5',
+            order: 4,
+            title: 'Envelope 5: As Últimas Peças',
+            clues: [
+                { id: 'e5-c1', category: 'physical', text: 'O sino de latão do primeiro navio da frota, peça histórica normalmente exposta na estante do escritório particular, é encontrado fora do lugar, próximo ao corpo.', isRedHerring: false },
+                { id: 'e5-c2', category: 'forensic', text: 'A perícia confirma que o formato arredondado da base do sino é compatível com o ferimento na cabeça de Cassiano.', isRedHerring: false },
+                { id: 'e5-c3', category: 'testimony', text: 'Um tripulante lembra que Hélio passou pelo corredor do deck inferior pouco depois do horário em que disse ter ficado sozinho na ponte de comando — mas na hora não achou estranho, pensou que fosse rotina.', isRedHerring: false },
+                { id: 'e5-c4', category: 'document', text: 'O registro do sistema de comunicação interna do iate mostra que a ponte de comando ficou sem nenhuma chamada de rotina durante quase toda a janela do crime, quando normalmente Hélio faz ao menos uma checagem por rádio com a tripulação nesse tipo de vistoria.', isRedHerring: false },
+            ],
+        },
+        {
+            id: 'env-6',
+            order: 5,
+            title: 'Envelope 6: Reviravoltas',
+            clues: [
+                { id: 'e6-c1', category: 'testimony', text: 'Confrontada, Fernanda admite ter sido ela quem encontrou as inconsistências nos laudos de inspeção e avisou o pai, motivada a garantir que os livros estivessem limpos antes de fechar sua parte na venda — sem qualquer relação com o crime.', isRedHerring: false },
+                { id: 'e6-c2', category: 'document', text: 'Um rascunho de discurso, amassado no cesto de lixo do escritório particular, revela que Cassiano planejava anunciar, no mesmo jantar, uma homenagem: o título honorário de "Comodoro da Frota" e um assento no conselho da empresa pra Hélio, como reconhecimento por 22 anos de comando.', isRedHerring: false },
+                { id: 'e6-c3', category: 'document', text: 'A data de criação do arquivo do discurso é de dias antes da carta de intenção de contratação do novo diretor de operações ser assinada — ou seja, Cassiano já vinha planejando homenagear Hélio antes mesmo de decidir como comunicar a mudança.', isRedHerring: false },
+            ],
+        },
+    ],
+    usedByRoomId: null,
+};
+
+const thirdSolution = {
+    suspectId: 'helio-marques',
+    motive: '22 anos de comando levaram Hélio a interpretar a contratação sigilosa de um diretor de operações marítimas externo como uma aposentadoria forçada e humilhante — ainda mais ao saber, pela boca do próprio Cassiano, que o anúncio sairia junto com a venda da frota ao grupo estrangeiro, no mesmo jantar, como se fosse só mais um detalhe da transição.',
+    meansAndOpportunity: 'Como capitão, Hélio tinha uma das duas únicas chaves-mestras de área restrita do iate, incluindo o escritório particular. Foi chamado a sós por Cassiano justamente pra receber a notícia em particular antes do anúncio público, ficando sozinho com ele no momento exato do crime.',
+    explanation: 'O testemunho do camareiro (alguém de uniforme branco saindo do corredor) é ambíguo por si só — toda a tripulação usa o mesmo uniforme. Mas a chave usada pra destravar o escritório pertence a só duas pessoas: o capitão (Hélio) ou o engenheiro-chefe (Tadeu) — e Tadeu está confirmado por dois tripulantes na casa de máquinas durante toda a janela do crime. Isso isola Hélio. Seu próprio álibi ("sozinho na ponte de comando") é minado pelo registro de comunicação interna, que mostra a ponte sem nenhuma checagem de rotina por rádio durante quase toda a janela — quando normalmente ele faz ao menos uma —, e reforçado por um tripulante que lembra de vê-lo no corredor do deck inferior, perto do escritório, no horário em que dizia estar sozinho na ponte. O resíduo de graxa marítima encontrado perto do corpo é de um lubrificante usado só na manutenção da ponte de comando, ligando fisicamente quem esteve ali à área que só Hélio frequenta rotineiramente. O motivo se fecha cruzando duas pistas que sozinhas pareciam apenas plausíveis: o bilhete "vou anunciar as duas coisas juntas" ganha sentido exato ao ser encontrado no mesmo envelope de uma carta de intenção que nomeia oficialmente o substituto de Hélio "efetivo após esta travessia" — fechando que as "duas coisas" eram a venda da frota E a substituição do capitão, anunciadas juntas naquela noite. Todos os outros suspeitos têm motivo, meios ou oportunidade descartados por evidência específica: Rodrigo está confirmado conduzindo o leilão pela gravação oficial, Fernanda por uma chamada de satélite registrada durante toda a janela, Tadeu pelos dois tripulantes na casa de máquinas, Otto por ter desembarcado na marina antes da hora do crime, e Carolina por uma gravação de imprensa cobrindo exatamente a janela do crime. A reviravolta final é amarga: um rascunho de discurso nunca lido, encontrado amassado no lixo, revela que Cassiano planejava anunciar, no mesmo jantar, uma homenagem a Hélio — o título de Comodoro da Frota e um assento no conselho, reconhecendo 22 anos de comando — e que esse plano existia antes mesmo de a contratação do substituto ser assinada. Hélio matou o homem a quem serviu a vida inteira por uma humilhação que, sem que ele soubesse, nunca foi a intenção real. E o aviso sobre os laudos de inspeção fraudados que chegou a Cassiano horas antes do baile não tinha nada a ver com o capitão: partiu de Fernanda, que só queria garantir os livros limpos antes de fechar sua parte na venda, sem imaginar que aquela mesma noite terminaria em uma morte.',
+    contradictingClueIds: ['e4-c2', 'e3-c3', 'e4-c1', 'e5-c3', 'e5-c4', 'e4-c3', 'e2-c1', 'e6-c2', 'e6-c3'],
+};
+
 async function main() {
     await db.collection('cases').doc(CASE_ID).set({
         ...publicCase,
@@ -570,6 +750,14 @@ async function main() {
     });
     await db.collection('case_solutions').doc(SECOND_CASE_ID).set(secondSolution);
     console.log(`✅ Caso "${SECOND_CASE_ID}" gravado em cases/ e case_solutions/.`);
+
+    await db.collection('cases').doc(THIRD_CASE_ID).set({
+        ...thirdCase,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        usedAt: null,
+    });
+    await db.collection('case_solutions').doc(THIRD_CASE_ID).set(thirdSolution);
+    console.log(`✅ Caso "${THIRD_CASE_ID}" gravado em cases/ e case_solutions/.`);
 }
 
 main().catch((error) => {
