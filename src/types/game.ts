@@ -50,4 +50,7 @@ export interface AppUser {
     plan?: string;
     planExpiresAt?: string | null;
     activeGroupId?: string | null;
+    // Só Admin SDK/console seta isso — cliente nunca escreve (fora da
+    // allowlist do update em firestore.rules pra users/{userId}).
+    isAdmin?: boolean;
 }

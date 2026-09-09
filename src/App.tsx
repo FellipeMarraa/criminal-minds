@@ -22,7 +22,7 @@ import {
     signInWithPopup,
     signInWithRedirect
 } from 'firebase/auth';
-import { Crown, DoorOpen, Hash, LogIn, LogOut, Plus, Search, Skull, Trash2, Users } from 'lucide-react';
+import { Crown, DoorOpen, Hash, LogIn, LogOut, Plus, Search, Skull, Sparkles, Trash2, Users } from 'lucide-react';
 
 import CaseLobbyPhase from './components/CaseLobbyPhase';
 import BriefingPhase from './components/BriefingPhase';
@@ -66,6 +66,11 @@ const UserAvatar = ({ src, name }: { src?: string | null; name: string }) => {
     );
 };
 
+// Só quem tem isAdmin:true no doc users/{uid} vê o botão de semear os casos
+// escritos à mão — checado de novo no servidor (api/admin/seed-cases.ts),
+// nunca confia só em esconder o botão no client. isAdmin é settable só via
+// Admin SDK/console (fora da allowlist de update em firestore.rules).
+
 export default function App() {
     const [user, setUser] = useState<AppUser | null>(null);
     const [loading, setLoading] = useState(true);
@@ -78,6 +83,7 @@ export default function App() {
     const [showCreateDialog, setShowCreateDialog] = useState(false);
     const [roomName, setRoomName] = useState('');
     const [errorMessage, setErrorMessage] = useState<string | null>(null);
+    const [seedingCases, setSeedingCases] = useState(false);
 
     // SSO vindo do quemsoueu: token chega no hash (#token=...), igual o
     // padrão do planning-trip — mas sem router, então é lido direto aqui.
@@ -101,7 +107,7 @@ export default function App() {
         let unsubRooms: (() => void) | null = null;
         let unsubProfile: (() => void) | null = null;
 
-        const subscribeToProfile = (userRef: ReturnType<typeof doc>, baseData: Omit<AppUser, 'plan' | 'planExpiresAt' | 'activeGroupId'>): Promise<() => void> => {
+        const subscribeToProfile = (userRef: ReturnType<typeof doc>, baseData: Omit<AppUser, 'plan' | 'planExpiresAt' | 'activeGroupId' | 'isAdmin'>): Promise<() => void> => {
             return new Promise((resolve) => {
                 let resolved = false;
                 const settle = (unsub: () => void) => {
@@ -115,7 +121,8 @@ export default function App() {
                         ...baseData,
                         plan: data?.plan,
                         planExpiresAt: data?.planExpiresAt ?? null,
-                        activeGroupId: data?.activeGroupId ?? null
+                        activeGroupId: data?.activeGroupId ?? null,
+                        isAdmin: data?.isAdmin === true
                     });
                     settle(unsub);
                 }, (error) => {
@@ -253,6 +260,29 @@ export default function App() {
             }
         } catch (error) {
             console.error("Erro no login:", error);
+        }
+    };
+
+    const handleSeedCases = async () => {
+        if (seedingCases) return;
+        setSeedingCases(true);
+        try {
+            const idToken = await auth.currentUser?.getIdToken();
+            if (!idToken) return;
+            const res = await fetch('/api/admin/seed-cases', {
+                method: 'POST',
+                headers: { Authorization: `Bearer ${idToken}` },
+            });
+            const body = await res.json().catch(() => null);
+            if (!res.ok) {
+                setErrorMessage(body?.message ?? 'Não foi possível semear os casos.');
+            } else {
+                setErrorMessage(`Casos gravados: ${body.seeded.join(', ')}. ${body.cleaned} doc(s) antigo(s) removido(s).`);
+            }
+        } catch {
+            setErrorMessage('Não foi possível semear os casos.');
+        } finally {
+            setSeedingCases(false);
         }
     };
 
@@ -428,9 +458,21 @@ export default function App() {
                                     </div>
                                 </div>
                             </div>
-                            <button onClick={() => auth.signOut()} className="rounded-xl bg-slate-800 p-3 text-slate-400 hover:bg-red-500/10 hover:text-red-500 transition-all shrink-0">
-                                <LogOut size={20} />
-                            </button>
+                            <div className="flex items-center gap-2 shrink-0">
+                                {user.isAdmin && (
+                                    <button
+                                        onClick={handleSeedCases}
+                                        disabled={seedingCases}
+                                        title="Gravar/atualizar os casos escritos à mão no Firestore"
+                                        className="rounded-xl bg-amber-500/10 border border-amber-500/30 p-3 text-amber-400 hover:bg-amber-500/20 transition-all disabled:opacity-50"
+                                    >
+                                        <Sparkles size={20} />
+                                    </button>
+                                )}
+                                <button onClick={() => auth.signOut()} className="rounded-xl bg-slate-800 p-3 text-slate-400 hover:bg-red-500/10 hover:text-red-500 transition-all">
+                                    <LogOut size={20} />
+                                </button>
+                            </div>
                         </header>
 
                         <div className="grid grid-cols-1 gap-6">
