@@ -4,10 +4,16 @@ import admin from "firebase-admin";
 // de lá): só um teto global mensal hardcoded, sem admin panel.
 const GLOBAL_LIMIT_USD = 10;
 
-// Preço em USD do groq/compound (console.groq.com/docs/compound/systems/compound,
-// 2026-09) — roda sobre GPT-OSS-120B: $0.15/1M tokens de entrada, $0.60/1M de
-// saída. Revisar se o preço publicado mudar.
-const PRICING = { promptPer1k: 0.00015, completionPer1k: 0.0006 };
+// Preço em USD por modelo (console.groq.com/pricing, 2026-09). groq/compound
+// roda sobre GPT-OSS-120B ($0.15/1M in, $0.60/1M out); openai/gpt-oss-20b é
+// o modelo menor usado só pra revisão/auditoria (rate limit próprio, não
+// compete com o de geração) — $0.075/1M in, $0.30/1M out. Revisar se os
+// preços publicados mudarem.
+const PRICING: Record<string, { promptPer1k: number; completionPer1k: number }> = {
+    'groq/compound': { promptPer1k: 0.00015, completionPer1k: 0.0006 },
+    'openai/gpt-oss-20b': { promptPer1k: 0.000075, completionPer1k: 0.0003 },
+};
+const DEFAULT_PRICING = PRICING['groq/compound'];
 
 // Busca na web embutida do Compound é cobrada à parte do token. Usa o valor
 // mais caro documentado ($8/1000 chamadas) de propósito — mais seguro
@@ -22,9 +28,10 @@ function isSamePeriod(periodStart: string | undefined): boolean {
     return stored.getUTCFullYear() === now.getUTCFullYear() && stored.getUTCMonth() === now.getUTCMonth();
 }
 
-export function calculateCostUsd(promptTokens: number, completionTokens: number, toolCalls = 0): number {
-    return (promptTokens / 1000) * PRICING.promptPer1k
-        + (completionTokens / 1000) * PRICING.completionPer1k
+export function calculateCostUsd(promptTokens: number, completionTokens: number, toolCalls = 0, model?: string): number {
+    const table = (model && PRICING[model]) || DEFAULT_PRICING;
+    return (promptTokens / 1000) * table.promptPer1k
+        + (completionTokens / 1000) * table.completionPer1k
         + toolCalls * TOOL_CALL_COST_USD;
 }
 

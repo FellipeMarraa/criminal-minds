@@ -2,7 +2,7 @@ import type { VercelRequest, VercelResponse } from "@vercel/node";
 import admin from "../_lib/firebaseAdmin.js";
 import { checkRateLimit } from "../_lib/rateLimit.js";
 import { checkUsageAllowed, calculateCostUsd, recordUsage } from "../_lib/usage.js";
-import { callGroq } from "../_lib/groq.js";
+import { callGroq, REVIEW_MODEL } from "../_lib/groq.js";
 import { CASE_GENERATION_SYSTEM_PROMPT, CASE_START, REVIEW_START, extractBlock, buildReviewPrompt } from "../_lib/casePrompt.js";
 import { validateCaseShape, type GeneratedCase } from "../_lib/caseSchema.js";
 
@@ -18,10 +18,20 @@ async function generateOneCase(): Promise<{ caseData: GeneratedCase; costUsd: nu
     let totalCost = 0;
 
     for (let attempt = 0; attempt < 2; attempt++) {
-        const genResult = await callGroq([
-            { role: 'system', content: CASE_GENERATION_SYSTEM_PROMPT },
-            { role: 'user', content: 'Gere um novo caso de investigação criminal, seguindo exatamente o formato pedido.' },
-        ]);
+        // Qualquer erro do Groq (429 de rate limit, 5xx, rede) conta como
+        // falha desta tentativa, não derruba a rota inteira — o resto do
+        // estoque (ou outras chamadas desta mesma reposição) continua
+        // tentando normalmente.
+        let genResult;
+        try {
+            genResult = await callGroq([
+                { role: 'system', content: CASE_GENERATION_SYSTEM_PROMPT },
+                { role: 'user', content: 'Gere um novo caso de investigação criminal, seguindo exatamente o formato pedido.' },
+            ]);
+        } catch (error) {
+            console.error('❌ Falha na geração do caso (tentativa segue disponível):', error instanceof Error ? error.message : error);
+            continue;
+        }
         totalCost += calculateCostUsd(genResult.promptTokens, genResult.completionTokens, genResult.toolCalls);
 
         const jsonText = extractBlock(genResult.text, CASE_START);
@@ -37,11 +47,21 @@ async function generateOneCase(): Promise<{ caseData: GeneratedCase; costUsd: nu
         const validated = validateCaseShape(parsed);
         if (!validated) continue;
 
-        const reviewResult = await callGroq([
-            { role: 'system', content: 'Você audita casos de investigação criminal em busca de incoerência lógica entre pistas e solução.' },
-            { role: 'user', content: buildReviewPrompt(validated) },
-        ]);
-        totalCost += calculateCostUsd(reviewResult.promptTokens, reviewResult.completionTokens, reviewResult.toolCalls);
+        // Revisão usa um modelo menor, separado do de geração — rate limit
+        // de conta é por modelo, então isso não compete pelo mesmo teto de
+        // tokens/minuto do groq/compound (foi exatamente isso que causou um
+        // 429 real em produção antes desta correção).
+        let reviewResult;
+        try {
+            reviewResult = await callGroq([
+                { role: 'system', content: 'Você audita casos de investigação criminal em busca de incoerência lógica entre pistas e solução.' },
+                { role: 'user', content: buildReviewPrompt(validated) },
+            ], REVIEW_MODEL);
+        } catch (error) {
+            console.error('❌ Falha na revisão do caso (tentativa segue disponível):', error instanceof Error ? error.message : error);
+            continue;
+        }
+        totalCost += calculateCostUsd(reviewResult.promptTokens, reviewResult.completionTokens, reviewResult.toolCalls, REVIEW_MODEL);
 
         const reviewJson = extractBlock(reviewResult.text, REVIEW_START);
         if (!reviewJson) continue;
@@ -92,28 +112,35 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
             const usageOk = await checkUsageAllowed(db);
             if (!usageOk) break;
 
-            const result = await generateOneCase();
-            if (!result) {
-                console.error('❌ Não foi possível gerar um caso coerente após tentativas — reposição fica pendente.');
-                continue;
-            }
+            // Cada slot é isolado: uma falha aqui (Groq, Firestore, o que
+            // for) nunca derruba a resposta inteira — só essa reposição
+            // específica fica pendente pro próximo consumo tentar de novo.
+            try {
+                const result = await generateOneCase();
+                if (!result) {
+                    console.error('❌ Não foi possível gerar um caso coerente após tentativas — reposição fica pendente.');
+                    continue;
+                }
 
-            const { solution, ...publicFields } = result.caseData;
-            const caseRef = db.collection('cases').doc();
-            const batch = db.batch();
-            batch.set(caseRef, {
-                ...publicFields,
-                premium: true,
-                source: 'ai',
-                status: 'available',
-                createdAt: admin.firestore.FieldValue.serverTimestamp(),
-                usedAt: null,
-                usedByRoomId: null,
-            });
-            batch.set(db.collection('case_solutions').doc(caseRef.id), solution);
-            await batch.commit();
-            await recordUsage(db, result.costUsd);
-            generated++;
+                const { solution, ...publicFields } = result.caseData;
+                const caseRef = db.collection('cases').doc();
+                const batch = db.batch();
+                batch.set(caseRef, {
+                    ...publicFields,
+                    premium: true,
+                    source: 'ai',
+                    status: 'available',
+                    createdAt: admin.firestore.FieldValue.serverTimestamp(),
+                    usedAt: null,
+                    usedByRoomId: null,
+                });
+                batch.set(db.collection('case_solutions').doc(caseRef.id), solution);
+                await batch.commit();
+                await recordUsage(db, result.costUsd);
+                generated++;
+            } catch (error) {
+                console.error('❌ Falha inesperada ao gerar/salvar um caso (slot pulado):', error instanceof Error ? error.message : error);
+            }
         }
 
         return res.status(200).json({ generated });
