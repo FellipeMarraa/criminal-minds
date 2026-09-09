@@ -275,7 +275,7 @@ export default function CaseLobbyPhase({ room, userId }: CaseLobbyPhaseProps) {
                                     <div className="min-w-0 flex-1">
                                         <p className="font-bold truncate">{c.title}</p>
                                         <p className="text-xs text-slate-500 mt-0.5">
-                                            {c.suspects.length} suspeitos · {c.envelopes.length} envelopes · {c.envelopes.reduce((n, e) => n + e.clues.length, 0)} pistas
+                                            {(c.suspects ?? []).length} suspeitos · {(c.envelopes ?? []).length} envelopes · {(c.envelopes ?? []).reduce((n, e) => n + (e.clues?.length ?? 0), 0)} pistas
                                         </p>
                                     </div>
                                     {locked && (

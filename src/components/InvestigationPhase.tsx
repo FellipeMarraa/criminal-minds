@@ -29,7 +29,7 @@ export default function InvestigationPhase({ room, userId }: InvestigationPhaseP
         );
     }
 
-    const envelopes = [...activeCase.envelopes].sort((a, b) => a.order - b.order);
+    const envelopes = [...(activeCase.envelopes ?? [])].sort((a, b) => a.order - b.order);
     const openedEnvelopes = envelopes.filter((e) => e.order <= envelopeIndex);
     const hasMoreEnvelopes = envelopeIndex + 1 < envelopes.length;
     const totalClues = envelopes.reduce((n, e) => n + e.clues.length, 0);
