@@ -15,7 +15,7 @@ export default function BriefingPhase({ room, userId }: BriefingPhaseProps) {
 
     const startInvestigation = async () => {
         if (!isAdmin) return;
-        await updateDoc(doc(db, "rooms", room.id), { status: 'INVESTIGATING', currentEnvelopeIndex: 0 });
+        await updateDoc(doc(db, "rooms", room.id), { status: 'INVESTIGATING', currentEnvelopeIndex: 0, envelopeReady: {} });
     };
 
     if (!activeCase) {

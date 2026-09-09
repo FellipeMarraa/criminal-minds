@@ -3,7 +3,7 @@ import { db } from '../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useCase } from '../lib/useCase';
 import type { Room } from '../types/game';
-import { Check, Crown, PlayCircle, Search, Skull, X } from 'lucide-react';
+import { Check, PlayCircle, Search, Skull, Users, X } from 'lucide-react';
 
 interface RevealPhaseProps {
     room: Room;
@@ -19,7 +19,6 @@ export default function RevealPhase({ room, userId }: RevealPhaseProps) {
     const isAdmin = room.adminId === userId;
     const activeCase = useCase(room.caseId);
     const solution = room.solution;
-    const standings = [...room.members].sort((a, b) => (b.totalPoints ?? 0) - (a.totalPoints ?? 0));
     const [revealed, setRevealed] = useState(false);
 
     useEffect(() => {
@@ -35,6 +34,7 @@ export default function RevealPhase({ room, userId }: RevealPhaseProps) {
             caseId: null,
             currentEnvelopeIndex: 0,
             votes: {},
+            envelopeReady: {},
         });
     };
 
@@ -78,20 +78,17 @@ export default function RevealPhase({ room, userId }: RevealPhaseProps) {
 
                         <div className="mb-4">
                             <h3 className="mb-3 flex items-center gap-2 text-xs font-bold uppercase tracking-[0.2em] text-slate-500">
-                                <Crown size={16} /> Placar
+                                <Users size={16} /> Como o Grupo Votou
                             </h3>
                             <div className="space-y-2">
-                                {standings.map((member, i) => {
+                                {room.members.map((member, i) => {
                                     const correct = room.votes?.[member.id]?.suspectId === solution.suspectId;
                                     return (
                                         <div
                                             key={member.id}
                                             style={{ animationDelay: `${450 + i * 80}ms` }}
-                                            className={`flex items-center gap-3 p-3 rounded-xl border animate-in fade-in slide-in-from-bottom-2 duration-300 ${
-                                                i === 0 ? 'bg-amber-500/5 border-amber-500/20' : 'bg-slate-900/50 border-slate-800'
-                                            }`}
+                                            className="flex items-center gap-3 p-3 rounded-xl border border-slate-800 bg-slate-900/50 animate-in fade-in slide-in-from-bottom-2 duration-300"
                                         >
-                                            <span className="text-xs font-mono text-slate-500 w-5 shrink-0">{i + 1}º</span>
                                             <img
                                                 src={member.photo || `https://api.dicebear.com/7.x/avataaars/svg?seed=${member.name}`}
                                                 className="w-8 h-8 rounded-full border border-slate-800 shrink-0"
@@ -103,7 +100,6 @@ export default function RevealPhase({ room, userId }: RevealPhaseProps) {
                                             ) : (
                                                 <X size={16} className="text-slate-600 shrink-0" />
                                             )}
-                                            <span className="text-sm font-black text-slate-300 shrink-0">{member.totalPoints ?? 0} pts</span>
                                         </div>
                                     );
                                 })}

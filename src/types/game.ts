@@ -4,7 +4,6 @@ export interface Player {
     id: string;
     name: string;
     photo?: string | null;
-    totalPoints?: number;
 }
 
 export interface Vote {
@@ -34,6 +33,11 @@ export interface Room {
     // chave de mapa por uid — dentro de um array de mapas isso não dá pra
     // travar por regra (ver firestore.rules).
     votes?: Record<string, Vote>;
+    // Confirmação de "pronto pra próximo envelope", por uid → índice do
+    // envelope confirmado (evita abrir tudo de uma vez sem discutir; ver
+    // InvestigationPhase.tsx). Guarda o índice em vez de bool pra não
+    // precisar zerar o mapa a cada avanço.
+    envelopeReady?: Record<string, number>;
     // Só existe depois que /api/cases/reveal escreve aqui (Admin SDK) — o
     // client nunca tem acesso à solução antes disso (ver case_solutions/{id}
     // nas firestore.rules, allow read/write: if false).

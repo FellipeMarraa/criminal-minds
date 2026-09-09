@@ -1,7 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import admin from "../_lib/firebaseAdmin.js";
 import { checkRateLimit } from "../_lib/rateLimit.js";
-import { awardCaseVotes } from "../_lib/scoring.js";
 
 // A solução de um caso (case_solutions/{id}) nunca é lida pelo client —
 // firestore.rules nega leitura pra qualquer um (allow read: if false). Esta
@@ -54,11 +53,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         }
         const solution = solutionSnap.data()!;
 
-        const awardedMembers = awardCaseVotes(room.members ?? [], room.votes, solution.suspectId);
-
+        // Sala é coletiva (turma toda joga junto) — não há pontuação/ranking
+        // individual, só se cada um votou certo ou não (ver RevealPhase.tsx).
         await roomRef.update({
             status: 'REVEAL',
-            members: awardedMembers,
             solution,
         });
 

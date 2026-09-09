@@ -2,7 +2,7 @@ import { db } from '../lib/firebase';
 import { doc, updateDoc } from 'firebase/firestore';
 import { useCase } from '../lib/useCase';
 import type { Room } from '../types/game';
-import { ArrowRight, Mail, Search, Users, Vote } from 'lucide-react';
+import { ArrowRight, Check, Mail, Search, Users, Vote } from 'lucide-react';
 
 interface InvestigationPhaseProps {
     room: Room;
@@ -35,9 +35,23 @@ export default function InvestigationPhase({ room, userId }: InvestigationPhaseP
     const totalClues = envelopes.reduce((n, e) => n + e.clues.length, 0);
     const revealedClues = openedEnvelopes.reduce((n, e) => n + e.clues.length, 0);
 
+    // Anfitrião só consegue abrir o próximo envelope quando todo mundo (menos
+    // ele mesmo — clicar em "abrir" já é a confirmação dele) sinalizar que
+    // está pronto. Evita clicar tudo de uma vez sem discutir as pistas.
+    const envelopeReady = room.envelopeReady ?? {};
+    const discussants = room.members.filter((m) => m.id !== room.adminId);
+    const readyCount = discussants.filter((m) => envelopeReady[m.id] === envelopeIndex).length;
+    const allReady = readyCount === discussants.length;
+    const iAmReady = envelopeReady[userId] === envelopeIndex;
+
     const openNextEnvelope = async () => {
-        if (!isAdmin || !hasMoreEnvelopes) return;
+        if (!isAdmin || !hasMoreEnvelopes || !allReady) return;
         await updateDoc(doc(db, "rooms", room.id), { currentEnvelopeIndex: envelopeIndex + 1 });
+    };
+
+    const markReady = async () => {
+        if (iAmReady || !hasMoreEnvelopes) return;
+        await updateDoc(doc(db, "rooms", room.id), { [`envelopeReady.${userId}`]: envelopeIndex });
     };
 
     const goToVoting = async () => {
@@ -116,17 +130,20 @@ export default function InvestigationPhase({ room, userId }: InvestigationPhaseP
 
                 {isAdmin ? (
                     <div className="sticky bottom-0 pt-6 pb-2 bg-gradient-to-t from-slate-950 via-slate-950 to-transparent space-y-3">
-                        <button
-                            onClick={openNextEnvelope}
-                            disabled={!hasMoreEnvelopes}
-                            className={`w-full py-3.5 rounded-2xl font-black flex items-center justify-center gap-2 transition-all ${
-                                hasMoreEnvelopes
-                                    ? 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 hover:scale-[1.02] active:scale-95'
-                                    : 'bg-slate-900 text-slate-600 border border-slate-800 cursor-not-allowed opacity-50'
-                            }`}
-                        >
-                            <ArrowRight size={18} /> Abrir Próximo Envelope
-                        </button>
+                        {hasMoreEnvelopes && (
+                            <button
+                                onClick={openNextEnvelope}
+                                disabled={!allReady}
+                                className={`w-full py-3.5 rounded-2xl font-black flex items-center justify-center gap-2 transition-all ${
+                                    allReady
+                                        ? 'bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 hover:scale-[1.02] active:scale-95'
+                                        : 'bg-slate-900 text-slate-600 border border-slate-800 cursor-not-allowed opacity-50'
+                                }`}
+                            >
+                                <ArrowRight size={18} />
+                                {allReady ? 'Abrir Próximo Envelope' : `Aguardando o grupo (${readyCount}/${discussants.length} prontos)`}
+                            </button>
+                        )}
                         <button
                             onClick={goToVoting}
                             className="w-full py-4 rounded-2xl font-black flex items-center justify-center gap-3 bg-red-600 hover:bg-red-500 text-white shadow-2xl shadow-red-500/20 border-b-4 border-red-800 transition-all hover:scale-[1.02] active:scale-95"
@@ -136,9 +153,20 @@ export default function InvestigationPhase({ room, userId }: InvestigationPhaseP
                     </div>
                 ) : (
                     <div className="sticky bottom-0 pt-6 pb-2 bg-gradient-to-t from-slate-950 via-slate-950 to-transparent">
-                        <div className="w-full py-4 rounded-2xl bg-slate-900 border border-slate-800 text-center text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl">
-                            Discutam as pistas · Aguardando o anfitrião avançar
-                        </div>
+                        {hasMoreEnvelopes && !iAmReady ? (
+                            <button
+                                onClick={markReady}
+                                className="w-full py-4 rounded-2xl font-black flex items-center justify-center gap-3 bg-red-600 hover:bg-red-500 text-white shadow-2xl shadow-red-500/20 border-b-4 border-red-800 transition-all hover:scale-[1.02] active:scale-95"
+                            >
+                                <Check size={20} /> Estou Pronto Pra Avançar
+                            </button>
+                        ) : (
+                            <div className="w-full py-4 rounded-2xl bg-slate-900 border border-slate-800 text-center text-slate-500 text-[10px] font-black uppercase tracking-[0.2em] shadow-xl">
+                                {hasMoreEnvelopes
+                                    ? `Aguardando o resto do grupo (${readyCount}/${discussants.length} prontos)`
+                                    : 'Discutam as pistas · Aguardando o anfitrião avançar'}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>
