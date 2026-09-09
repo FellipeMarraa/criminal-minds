@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 import admin from "../_lib/firebaseAdmin.js";
-import { FREE_CASE_ID, FREE_CASE, FREE_SOLUTION, SHOWCASE_CASE_ID, SHOWCASE_CASE, SHOWCASE_SOLUTION, SECOND_CASE_ID, SECOND_CASE, SECOND_SOLUTION, THIRD_CASE_ID, THIRD_CASE, THIRD_SOLUTION } from "../_lib/seedData.js";
+import { FREE_CASE_ID, FREE_CASE, FREE_SOLUTION, SHOWCASE_CASE_ID, SHOWCASE_CASE, SHOWCASE_SOLUTION, SECOND_CASE_ID, SECOND_CASE, SECOND_SOLUTION, THIRD_CASE_ID, THIRD_CASE, THIRD_SOLUTION, FOURTH_CASE_ID, FOURTH_CASE, FOURTH_SOLUTION } from "../_lib/seedData.js";
 
 // Endpoint de admin só pra evitar terminal/service-account local — faz o
 // mesmo que scripts/cleanup-legacy-cases.mjs + scripts/seed-cases.mjs, só
@@ -69,7 +69,14 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         });
         await db.collection('case_solutions').doc(THIRD_CASE_ID).set(THIRD_SOLUTION);
 
-        return res.status(200).json({ cleaned, seeded: [FREE_CASE_ID, SHOWCASE_CASE_ID, SECOND_CASE_ID, THIRD_CASE_ID] });
+        await db.collection('cases').doc(FOURTH_CASE_ID).set({
+            ...FOURTH_CASE,
+            createdAt: admin.firestore.FieldValue.serverTimestamp(),
+            usedAt: null,
+        });
+        await db.collection('case_solutions').doc(FOURTH_CASE_ID).set(FOURTH_SOLUTION);
+
+        return res.status(200).json({ cleaned, seeded: [FREE_CASE_ID, SHOWCASE_CASE_ID, SECOND_CASE_ID, THIRD_CASE_ID, FOURTH_CASE_ID] });
     } catch (error) {
         console.error('❌ Erro ao semear casos via admin:', error instanceof Error ? error.message : error);
         return res.status(500).json({ message: 'Falha ao semear casos' });

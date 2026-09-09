@@ -726,6 +726,186 @@ const thirdSolution = {
     contradictingClueIds: ['e4-c2', 'e3-c3', 'e4-c1', 'e5-c3', 'e5-c4', 'e4-c3', 'e2-c1', 'e6-c2', 'e6-c3'],
 };
 
+
+// ---------------------------------------------------------------------
+// 4º caso premium escrito à mão: "Última Estação"
+// ---------------------------------------------------------------------
+// Mesma régua: 6 suspeitos, cada um descartado por evidência específica
+// cruzada, pista ambígua (2 chaves-mestras) só fecha cruzando com outra.
+// Motivo de personagem diferente dos outros 3 (aqui é encobrir um crime
+// antigo/chantagem, não ambição, desvio financeiro ou medo de
+// substituição) e mesmo estilo de reviravolta final.
+const FOURTH_CASE_ID = 'caso-05-trem';
+
+const fourthCase = {
+    title: 'Última Estação',
+    premium: true,
+    source: 'handwritten',
+    status: 'available',
+    victim: {
+        name: 'Bernardo Aguiar',
+        age: 72,
+        occupation: 'Escritor best-seller',
+        description: 'Romancista consagrado, autor de mais de 20 livros ao longo de 40 anos de carreira — embarcou na turnê de despedida do último romance a bordo do Expresso da Serra, trem noturno de luxo que atravessa a serra em duas noites de viagem.',
+        timeOfDeath: '21h30 (estimado)',
+        location: 'Compartimento privado de Bernardo, vagão 3, Expresso da Serra',
+    },
+    intro: `O Expresso da Serra é um trem noturno de luxo, com poucos compartimentos privados e um vagão-restaurante que vira ponto de encontro dos passageiros durante a viagem. Naquela noite, ele carrega a comitiva da turnê de despedida de Bernardo Aguiar — e, a bordo, seis pessoas guardam motivos bem diferentes pra evitar que certas coisas venham à tona antes do fim da viagem. A ghostwriter Larissa Prado escreveu, em segredo, os três últimos best-sellers assinados só por Bernardo, e vem pressionando por um reconhecimento formal — ou ao menos uma fatia maior dos direitos autorais. O ex-editor Henrique Bastos foi demitido publicamente por Bernardo anos atrás, numa entrevista que arruinou sua reputação no mercado editorial. A jovem autora Júlia Andrade descobriu recentemente que foi Bernardo, sob pseudônimo, quem escreveu a crítica anônima que praticamente afundou seu livro de estreia. O filho Rodrigo Vieira, que administra o espólio literário do pai, teme que Bernardo doe grande parte da fortuna a uma fundação em vez de deixá-la pra família. A agente literária Otília Ferraz, que representa Bernardo há décadas, sabe que está prestes a ser substituída por uma agência mais jovem, num acordo milionário que ele negocia em sigilo. E Vitor Salembier, contratado como segurança particular pra essa turnê, é só mais um rosto novo no meio de tanta gente com história antiga com o escritor.
+
+A tensão mais visível da viagem, porém, é o rumor que já circula entre os passageiros: Bernardo pretende revelar, no discurso de encerramento da turnê, o nome de quem realmente escreveu seus últimos três livros — um gesto que ele descreve como "acerto de contas antes que seja tarde", e que deixou Larissa visivelmente nervosa desde o embarque.
+
+Horas antes do jantar de encerramento, Bernardo pediu pra ficar sozinho no compartimento por um tempo, dizendo à sua assistente que precisava "revisar um capítulo antigo antes que fosse tarde demais". Por volta das 21h30, enquanto a maior parte dos passageiros estava no vagão-restaurante pro jantar de despedida, Bernardo foi visto por último entrando em seu compartimento — e não voltou. Foi encontrado pouco depois por um comissário de bordo fazendo a ronda, caído entre as poltronas, com um ferimento na cabeça que a perícia descartaria rapidamente como sendo de um trancolejo do trem.`,
+    timeline: [
+        'Há 40 anos — Bernardo publica seu primeiro romance de sucesso, início da carreira.',
+        'Há 40 anos — numa noite após uma festa, Bernardo se envolve num atropelamento fatal que nunca vem a público; Otília, presente no carro, nunca conta o que viu.',
+        'Há 22 anos — Otília se torna agente literária de Bernardo, começa a administrar toda a carreira dele.',
+        'Há 6 anos — Henrique é demitido publicamente por Bernardo numa entrevista que arruína sua reputação editorial.',
+        'Há 4 anos — Larissa é contratada, em segredo, como ghostwriter dos romances de Bernardo.',
+        'Há 3 anos — a crítica anônima que afunda o livro de estreia de Júlia é publicada; ela só descobre a autoria de Bernardo recentemente.',
+        'Há 8 meses — Otília começa a negociar, em sigilo, ser substituída por uma agência mais jovem, num acordo milionário pra Bernardo.',
+        'Há 5 meses — Rodrigo assume a administração do espólio literário do pai.',
+        'Há 3 meses — Bernardo decide revisar o testamento, considerando doar parte da fortuna a uma fundação.',
+        'Há 2 meses — Vitor é contratado como segurança particular pra turnê de despedida.',
+        'Há 3 semanas — Larissa passa a pressionar por reconhecimento formal como coautora dos últimos livros.',
+        'No embarque da turnê — corre entre os passageiros o rumor de que Bernardo vai revelar, no discurso de encerramento, quem escreveu seus últimos livros.',
+        'Horas antes do jantar — Bernardo pede pra ficar sozinho, dizendo que precisa "revisar um capítulo antigo antes que seja tarde demais".',
+        '21h30 (estimado) — Bernardo é morto em seu compartimento.',
+    ],
+    suspects: [
+        {
+            id: 'larissa-prado',
+            name: 'Larissa Prado',
+            age: 38,
+            occupation: 'Ghostwriter',
+            relationshipToVictim: 'Colaboradora não creditada',
+            alibi: 'Diz que passou a janela toda no vagão-restaurante, posando pra fotos com passageiros que reconheceram o nome dela na lista da turnê.',
+            background: 'Escreveu em segredo os três últimos romances assinados só por Bernardo. Vem pressionando havia semanas por reconhecimento formal ou uma fatia maior dos direitos autorais.',
+        },
+        {
+            id: 'henrique-bastos',
+            name: 'Henrique Bastos',
+            age: 61,
+            occupation: 'Ex-editor',
+            relationshipToVictim: 'Ex-funcionário',
+            alibi: 'Diz que desceu do trem na parada rápida da estação da serra, antes do jantar, e voltou a embarcar logo em seguida.',
+            background: 'Demitido publicamente por Bernardo numa entrevista que arruinou sua reputação no mercado editorial anos atrás. Foi convidado pra turnê como cortesia, o que ele mesmo considera estranho.',
+        },
+        {
+            id: 'julia-andrade',
+            name: 'Júlia Andrade',
+            age: 29,
+            occupation: 'Escritora',
+            relationshipToVictim: 'Colega de profissão',
+            alibi: 'Diz que passou a janela toda conduzindo uma sessão de leitura e perguntas com passageiros no vagão-restaurante.',
+            background: 'Descobriu recentemente que foi Bernardo, sob pseudônimo, quem escreveu a crítica anônima que praticamente afundou seu livro de estreia.',
+        },
+        {
+            id: 'rodrigo-vieira',
+            name: 'Rodrigo Vieira',
+            age: 40,
+            occupation: 'Administrador do espólio literário',
+            relationshipToVictim: 'Filho',
+            alibi: 'Diz que passou a janela numa chamada com o advogado da família, pelo wi-fi do trem, sobre pendências do espólio.',
+            background: 'Administra o espólio literário do pai e teme que Bernardo doe grande parte da fortuna a uma fundação em vez de deixá-la pra família.',
+        },
+        {
+            id: 'vitor-salembier',
+            name: 'Vitor Salembier',
+            age: 47,
+            occupation: 'Segurança particular',
+            relationshipToVictim: 'Contratado pra turnê',
+            alibi: 'Diz que estava fazendo a ronda de segurança no vagão-restaurante e nos corredores durante toda a janela.',
+            background: 'Contratado há 2 meses só pra essa turnê. Como parte do protocolo de segurança, é uma das duas únicas pessoas a bordo com chave-mestra de todos os compartimentos privados — a outra fica com a agente literária, por questões de logística da turnê.',
+        },
+        {
+            id: 'otilia-ferraz',
+            name: 'Otília Ferraz',
+            age: 68,
+            occupation: 'Agente literária',
+            relationshipToVictim: 'Agente e amiga de longa data',
+            alibi: 'Diz que passou a janela sozinha em seu próprio compartimento, revisando contratos antes do jantar de encerramento.',
+            background: 'Representa Bernardo há 22 anos e o conhece desde muito antes disso. Está prestes a ser substituída por uma agência mais jovem, num acordo milionário que ele negocia em sigilo. Por logística da turnê, guarda uma das duas únicas chaves-mestras dos compartimentos privados.',
+        },
+    ],
+    envelopes: [
+        {
+            id: 'env-1',
+            order: 0,
+            title: 'Envelope 1: A Cena e os Primeiros Depoimentos',
+            clues: [
+                { id: 'e1-c1', category: 'forensic', text: 'A perícia descarta a hipótese de trancolejo: o ferimento na cabeça de Bernardo tem formato redondo, incompatível com a mobília do compartimento — sugere golpe com objeto arredondado e pesado.', isRedHerring: false },
+                { id: 'e1-c2', category: 'testimony', text: 'Um passageiro do compartimento vizinho comenta ter ouvido a porta de Bernardo sendo destravada por volta das 21h30, mas só viu de relance uma sombra entrando no corredor mal iluminado, sem reconhecer quem era.', isRedHerring: false },
+                { id: 'e1-c3', category: 'document', text: 'Um extrato de royalties encontrado entre os pertences de Bernardo mostra pagamentos recentes a Larissa bem abaixo do que ela vinha cobrando publicamente, numa disputa que se arrasta há semanas.', isRedHerring: false },
+                { id: 'e1-c4', category: 'testimony', text: 'Larissa confirma que passou a noite toda no vagão-restaurante, posando pra fotos com passageiros que a reconheceram da lista da turnê.', isRedHerring: false },
+            ],
+        },
+        {
+            id: 'env-2',
+            order: 1,
+            title: 'Envelope 2: Motivos a Bordo',
+            clues: [
+                { id: 'e2-c1', category: 'document', text: 'Um rascunho de discurso encontrado na maleta de Bernardo diz: "preciso contar a verdade sobre aquela noite, não posso levar isso pro túmulo, mesmo que magoe quem mais confiou em mim".', isRedHerring: false },
+                { id: 'e2-c2', category: 'testimony', text: 'Júlia admite ter descoberto recentemente que Bernardo escreveu, sob pseudônimo, a crítica que afundou seu livro de estreia, mas garante que passou a noite conduzindo sua própria sessão de leitura com passageiros.', isRedHerring: false },
+                { id: 'e2-c3', category: 'testimony', text: 'Henrique fica visivelmente desconfortável quando perguntado por que foi convidado pra turnê, mesmo anos depois de ter sido demitido publicamente por Bernardo.', isRedHerring: false },
+                { id: 'e2-c4', category: 'physical', text: 'Uma taça de vinho quebrada é encontrada no corredor próximo ao vagão-restaurante — à primeira vista parece relevante, mas é de um brinde que aconteceu horas antes, sem relação com o crime.', isRedHerring: true },
+            ],
+        },
+        {
+            id: 'env-3',
+            order: 2,
+            title: 'Envelope 3: Álibis em Xeque',
+            clues: [
+                { id: 'e3-c1', category: 'document', text: 'A transmissão ao vivo da turnê nas redes sociais confirma Larissa, visivelmente, posando pra fotos no vagão-restaurante durante toda a janela do crime.', isRedHerring: false },
+                { id: 'e3-c2', category: 'document', text: 'A câmera da plataforma da estação da serra confirma que Henrique desembarcou e reembarcou bem antes da hora estimada do crime, de acordo com o registro de horário do maquinista.', isRedHerring: false },
+                { id: 'e3-c3', category: 'testimony', text: 'Dezenas de passageiros confirmam Júlia conduzindo sua sessão de leitura e perguntas no vagão-restaurante durante toda a janela do crime.', isRedHerring: false },
+                { id: 'e3-c4', category: 'document', text: 'O registro de chamadas pelo wi-fi do trem confirma uma ligação contínua de Rodrigo com o advogado da família, cobrindo toda a janela do crime.', isRedHerring: false },
+                { id: 'e3-c5', category: 'testimony', text: 'O maquinista e um comissário confirmam Vitor fazendo a ronda de segurança pelo vagão-restaurante e pelos corredores durante toda a janela do crime.', isRedHerring: false },
+            ],
+        },
+        {
+            id: 'env-4',
+            order: 3,
+            title: 'Envelope 4: O Segredo do Compartimento',
+            clues: [
+                { id: 'e4-c1', category: 'forensic', text: 'Um resíduo de perfume incomum, de uma linha descontinuada há décadas, é encontrado perto do corpo — o laboratório confirma se tratar de uma fragrância que só uma pessoa entre os passageiros ainda usa.', isRedHerring: false },
+                { id: 'e4-c2', category: 'document', text: 'O sistema de controle de acesso mostra que a porta do compartimento de Bernardo foi destravada, no horário do crime, com uma das duas únicas chaves-mestras de compartimento — uma pertence ao segurança da turnê, a outra à agente literária.', isRedHerring: false },
+                { id: 'e4-c3', category: 'document', text: 'Um recorte de jornal antigo, amarelado, é encontrado dobrado dentro da mesma pasta do rascunho de discurso visto antes — noticia um atropelamento fatal não solucionado, de 40 anos atrás, na mesma cidade onde Bernardo morava na época.', isRedHerring: false },
+                { id: 'e4-c4', category: 'testimony', text: 'A assistente de Bernardo confirma que ele pediu pra ficar sozinho no compartimento horas antes do jantar, dizendo que precisava "revisar um capítulo antigo antes que fosse tarde demais".', isRedHerring: false },
+            ],
+        },
+        {
+            id: 'env-5',
+            order: 4,
+            title: 'Envelope 5: As Últimas Peças',
+            clues: [
+                { id: 'e5-c1', category: 'physical', text: 'A estatueta do Prêmio Nacional de Literatura, que Bernardo levava consigo como peça de decoração pessoal na turnê, é encontrada fora do lugar, próxima ao corpo.', isRedHerring: false },
+                { id: 'e5-c2', category: 'forensic', text: 'A perícia confirma que o formato arredondado da base da estatueta é compatível com o ferimento na cabeça de Bernardo.', isRedHerring: false },
+                { id: 'e5-c3', category: 'testimony', text: 'Um comissário lembra de ter visto Otília saindo do corredor do vagão 3 pouco antes do jantar de encerramento — mas na hora não achou estranho, pensou que fosse só uma visita de cortesia.', isRedHerring: false },
+                { id: 'e5-c4', category: 'document', text: 'Otília não aparece em nenhum registro do vagão-restaurante durante toda a janela do crime — ao contrário de todos os outros passageiros da comitiva, que circularam por lá em algum momento da noite.', isRedHerring: false },
+            ],
+        },
+        {
+            id: 'env-6',
+            order: 5,
+            title: 'Envelope 6: Reviravoltas',
+            clues: [
+                { id: 'e6-c1', category: 'document', text: 'Uma carta antiga, guardada havia anos entre os pertences de Rodrigo, mostra que ele já sabia do atropelamento de 40 anos atrás e vinha, em segredo, usando essa informação pra pressionar o próprio pai por uma fatia maior da herança — sem qualquer relação com o crime.', isRedHerring: false },
+                { id: 'e6-c2', category: 'document', text: 'O editor de Bernardo confirma, por e-mail, que o capítulo final do livro de memórias do escritor — incluindo a confissão completa sobre o atropelamento de 40 anos atrás — já havia sido enviado à editora dias antes do embarque na turnê, pronto pra publicação póstuma independente do que acontecesse com ele.', isRedHerring: false },
+                { id: 'e6-c3', category: 'testimony', text: 'Um velho conhecido da cidade natal de Bernardo, contatado pela investigação, confirma que Otília estava no carro na noite do atropelamento, 40 anos atrás, e nunca contou o que viu.', isRedHerring: false },
+            ],
+        },
+    ],
+    usedByRoomId: null,
+};
+
+const fourthSolution = {
+    suspectId: 'otilia-ferraz',
+    motive: 'Havia 40 anos, Otília estava no carro na noite em que Bernardo se envolveu num atropelamento fatal nunca solucionado, e nunca contou o que viu — um silêncio que sustentou toda a relação profissional dos dois desde então. Ao saber que Bernardo pretendia revelar tudo publicamente no discurso de encerramento da turnê, sem sequer avisá-la, Otília decidiu impedir a confissão a qualquer custo, com medo de ser incriminada como cúmplice mesmo depois de tantas décadas.',
+    meansAndOpportunity: 'Por logística da turnê, Otília guardava uma das duas únicas chaves-mestras dos compartimentos privados. Aproveitou a janela em que praticamente todos os outros passageiros estavam no vagão-restaurante pro jantar de encerramento pra procurar Bernardo a sós em seu compartimento.',
+    explanation: 'O relato do passageiro vizinho (uma sombra entrando no corredor mal iluminado) é ambíguo por si só — não identifica ninguém. Mas a chave usada pra destravar o compartimento pertence a só duas pessoas: o segurança da turnê (Vitor) ou a agente literária (Otília) — e Vitor está confirmado pelo maquinista e por um comissário fazendo a ronda durante toda a janela do crime, isolando Otília. Diferente de todos os outros passageiros da comitiva, que circularam pelo vagão-restaurante em algum momento da noite, Otília não aparece em nenhum registro de lá durante toda a janela — e um comissário lembra de tê-la visto saindo do corredor do vagão 3 pouco antes do jantar. O resíduo de perfume descontinuado encontrado perto do corpo pertence a uma fragrância que só ela ainda usa, ligando-a fisicamente ao local. O motivo se fecha cruzando duas pistas que sozinhas pareciam só sugestivas: o rascunho de discurso ("a verdade sobre aquela noite... quem mais confiou em mim") ganha sentido exato ao ser encontrado na mesma pasta de um recorte de jornal sobre um atropelamento fatal não solucionado de 40 anos atrás — e um antigo conhecido da cidade natal de Bernardo confirma que Otília estava no carro naquela noite e nunca falou. Todos os outros suspeitos têm motivo, meios ou oportunidade descartados por evidência específica: Larissa está confirmada pela transmissão ao vivo da turnê, Henrique pela câmera da plataforma da estação, Júlia por dezenas de testemunhas na sua própria sessão de leitura, Rodrigo por uma chamada contínua pelo wi-fi do trem, e Vitor pelo maquinista e por um comissário durante a ronda. A reviravolta final é amarga: um e-mail do editor confirma que o capítulo de confissão completa já havia sido enviado à editora dias antes do embarque, pronto pra publicação póstuma independente do que acontecesse com Bernardo — Otília matou pra impedir uma verdade que já era impossível de conter. E a carta que vincula Rodrigo ao mesmo segredo antigo, aliás, revela outra reviravolta: o próprio filho já sabia do atropelamento havia anos e vinha usando a informação pra pressionar o pai por mais herança, sem qualquer relação com o assassinato.',
+    contradictingClueIds: ['e4-c2', 'e3-c5', 'e5-c3', 'e5-c4', 'e4-c1', 'e4-c3', 'e6-c3', 'e2-c1', 'e6-c2', 'e6-c1'],
+};
+
 async function main() {
     await db.collection('cases').doc(CASE_ID).set({
         ...publicCase,
@@ -758,6 +938,14 @@ async function main() {
     });
     await db.collection('case_solutions').doc(THIRD_CASE_ID).set(thirdSolution);
     console.log(`✅ Caso "${THIRD_CASE_ID}" gravado em cases/ e case_solutions/.`);
+
+    await db.collection('cases').doc(FOURTH_CASE_ID).set({
+        ...fourthCase,
+        createdAt: admin.firestore.FieldValue.serverTimestamp(),
+        usedAt: null,
+    });
+    await db.collection('case_solutions').doc(FOURTH_CASE_ID).set(fourthSolution);
+    console.log(`✅ Caso "${FOURTH_CASE_ID}" gravado em cases/ e case_solutions/.`);
 }
 
 main().catch((error) => {
